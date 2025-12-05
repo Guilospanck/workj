@@ -28,7 +28,14 @@ add(){
 
 # Usage: remove <branch_name>
 remove(){
-	git worktree remove $1
+	local BRANCH_NAME=$1
+
+	# If worktreee does not exist, do not proceed
+	if ! git worktree list --porcelain | grep -q "branch refs/heads/$BRANCH_NAME"; then
+	  return
+	fi
+
+	git worktree remove $BRANCH_NAME
 }
 
 get_or_create_worktree_directory(){
