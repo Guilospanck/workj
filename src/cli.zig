@@ -32,6 +32,11 @@ pub fn run() !void {
         }
     }
 
+    if (!try isInGitRepo(allocator)) {
+        std.debug.print("Must be used inside a git repository.\n", .{});
+        return;
+    }
+
     var args = try std.process.argsWithAllocator(allocator);
     defer args.deinit();
 
@@ -55,6 +60,23 @@ pub fn run() !void {
             try remove(allocator, branch);
         },
     }
+}
+
+fn isInGitRepo(allocator: std.mem.Allocator) !bool {
+    const argv = [_][]const u8{ "git", "rev-parse", "--is-inside-work-tree" };
+
+    var cp = std.process.Child.init(&argv, allocator);
+
+    // We don't need stdout, only exit status.
+    cp.stdout_behavior = .Ignore;
+    cp.stderr_behavior = .Ignore;
+
+    try cp.spawn();
+
+    const result = try cp.wait();
+
+    // exit code 0 means inside a Git repo
+    return result == .Exited and result.Exited == 0;
 }
 
 fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
