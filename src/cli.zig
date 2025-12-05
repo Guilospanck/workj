@@ -22,7 +22,7 @@ pub fn run() !void {
     while (args.next()) |arg| {
         if (std.mem.eql(u8, arg, "add")) {
             const branch = args.next() orelse return ArgsParseError.MissingValue;
-            try add(branch);
+            try add(allocator, branch);
         } else if (std.mem.eql(u8, arg, "remove")) {
             const branch = args.next() orelse return ArgsParseError.MissingValue;
             try remove(branch);
@@ -33,17 +33,9 @@ pub fn run() !void {
     }
 }
 
-fn add(branch: []const u8) !void {
-    const alloc = std.heap.page_allocator;
-
-    // Get current directory
-    const cwd_dir = std.fs.cwd();
-    const abs_path = try cwd_dir.realpathAlloc(alloc, ".");
-    defer alloc.free(abs_path);
-
-    // Build the workj.sh executable path
-    const workjExec = try std.fmt.allocPrint(alloc, "{s}/scripts/workj.sh", .{abs_path});
-    defer alloc.free(workjExec);
+fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
+    const workjExec = try getScriptAbsPath(allocator, "workj.sh");
+    defer allocator.free(workjExec);
 
     const argv = [_][]const u8{ workjExec, "add", branch };
 
@@ -54,6 +46,18 @@ fn remove(branch: []const u8) !void {
     const argv = [_][]const u8{ "echo", branch };
 
     try spawnShell(argv[0..]);
+}
+
+fn getScriptAbsPath(allocator: std.mem.Allocator, script: []const u8) ![]const u8 {
+    // Get current directory
+    const cwd_dir = std.fs.cwd();
+    const abs_path = try cwd_dir.realpathAlloc(allocator, ".");
+    defer allocator.free(abs_path);
+
+    // Build the workj.sh executable path
+    const workjExec = try std.fmt.allocPrint(allocator, "{s}/scripts/{s}", .{ abs_path, script });
+
+    return workjExec;
 }
 
 fn spawnShell(argv: []const []const u8) !void {
