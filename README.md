@@ -30,3 +30,23 @@ To remove it:
 ```sh
 workj remove potato
 ```
+
+## Development
+
+Build it:
+
+```sh
+zig build
+```
+
+Run it:
+
+```
+./zig-out/bin/workj <commmand> <branch_name>
+```
+
+### TODOs
+
+- [ ] Convert shell to zig
+- [ ] Add tests
+- [ ] Validate the outputs to stdout/stderr
