@@ -1,6 +1,25 @@
 const std = @import("std");
+const logger = @import("logger.zig");
 
 const ArgsParseError = error{ MissingValue, UnknownValue };
+
+const Command = enum {
+    Add,
+    Remove,
+
+    fn fromString(s: []const u8) ?Command {
+        if (std.mem.eql(u8, s, "add")) {
+            return Command.Add;
+        } else if (std.mem.eql(u8, s, "remove")) {
+            return Command.Remove;
+        } else {
+            return null;
+        }
+    }
+};
+
+const WORKJ_SCRIPT: []const u8 = "workj.sh";
+const USAGE: []const u8 = "Usage: workj <command> <branch_name>\n\nAvailable commands: add, remove\n";
 
 pub fn run() !void {
     // Allocator
@@ -9,78 +28,92 @@ pub fn run() !void {
     defer {
         const deinit_result = debugAlloc.deinit();
         if (deinit_result != .ok) {
-            std.debug.print("DebugAllocator deinit reported error: {any}\n", .{deinit_result});
+            logger.err("DebugAllocator deinit reported error: {any}\n", .{deinit_result});
         }
     }
 
     var args = try std.process.argsWithAllocator(allocator);
     defer args.deinit();
 
-    // Remove the program name
-    const programName = args.next();
+    _ = args.next();
 
-    while (args.next()) |arg| {
-        if (std.mem.eql(u8, arg, "add")) {
-            const branch = args.next() orelse return ArgsParseError.MissingValue;
+    const cmd = try expectArg(&args, "<command>");
+    const branch = try expectArg(&args, "<branch_name>");
+
+    const parsedCommand = Command.fromString(cmd);
+
+    if (parsedCommand == null) {
+        std.debug.print("{s}", .{USAGE});
+        return;
+    }
+
+    switch (parsedCommand.?) {
+        Command.Add => {
             try add(allocator, branch);
-        } else if (std.mem.eql(u8, arg, "remove")) {
-            const branch = args.next() orelse return ArgsParseError.MissingValue;
+        },
+        Command.Remove => {
             try remove(allocator, branch);
-        } else {
-            std.debug.print("Usage: {any} add/remove <branch_name>\n", .{programName});
-            return ArgsParseError.UnknownValue;
-        }
+        },
     }
 }
 
 fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
-    const workjExec = try getScriptAbsPath(allocator, "workj.sh");
+    const workjExec = try getScriptAbsPath(allocator, WORKJ_SCRIPT);
     defer allocator.free(workjExec);
 
     const argv = [_][]const u8{ workjExec, "add", branch };
 
-    try spawnShell(argv[0..]);
+    try spawnShell(allocator, argv[0..]);
 }
 
 fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
-    const workjExec = try getScriptAbsPath(allocator, "workj.sh");
+    const workjExec = try getScriptAbsPath(allocator, WORKJ_SCRIPT);
     defer allocator.free(workjExec);
 
     const argv = [_][]const u8{ workjExec, "remove", branch };
 
-    try spawnShell(argv[0..]);
+    try spawnShell(allocator, argv[0..]);
 }
 
 fn getScriptAbsPath(allocator: std.mem.Allocator, script: []const u8) ![]const u8 {
-    // Get current directory
+    // Get current absolute path
     const cwd_dir = std.fs.cwd();
     const abs_path = try cwd_dir.realpathAlloc(allocator, ".");
     defer allocator.free(abs_path);
 
-    // Build the workj.sh executable path
+    // Build the `script` executable path
     const workjExec = try std.fmt.allocPrint(allocator, "{s}/scripts/{s}", .{ abs_path, script });
 
     return workjExec;
 }
 
-fn spawnShell(argv: []const []const u8) !void {
-    var cp = std.process.Child.init(argv, std.heap.page_allocator);
+fn spawnShell(allocator: std.mem.Allocator, argv: []const []const u8) !void {
+    var cp = std.process.Child.init(argv, allocator);
 
     try cp.spawn();
     const term = try cp.wait();
 
     switch (term) {
-        .Signal => {
-            std.debug.print("Command signal with code {any}\n", .{term});
+        .Signal => |sig| {
+            logger.debug("Terminated by signal {d}\n", .{sig});
         },
-        .Stopped => {
-            std.debug.print("Command stopped with code {any}\n", .{term});
+        .Stopped => |sig| {
+            logger.debug("Stopped by signal {d}\n", .{sig});
         },
-        .Unknown => {
-            std.debug.print("Command failed with code {any}\n", .{term});
+        .Unknown => |value| {
+            logger.debug("Unknown termination {d}\n", .{value});
         },
-        .Exited => {
-            std.debug.print("Command exited with code {any}\n", .{term});
+        .Exited => |code| {
+            logger.debug("Process exited with code {d}\n", .{code});
         },
     }
+}
+
+fn expectArg(iter: *std.process.ArgIterator, message: []const u8) ArgsParseError![]const u8 {
+    const arg = iter.next() orelse {
+        std.debug.print("Missing argument {s}.\n{s}\n", .{ message, USAGE });
+        return ArgsParseError.MissingValue;
+    };
+
+    return arg;
 }
