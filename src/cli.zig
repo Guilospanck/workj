@@ -3,8 +3,6 @@ const std = @import("std");
 const ArgsParseError = error{ MissingValue, UnknownValue };
 
 pub fn run() !void {
-    std.debug.print("Hello from CLI\n", .{});
-
     // Allocator
     var debugAlloc: std.heap.DebugAllocator(.{}) = .init;
     const allocator = debugAlloc.allocator();
@@ -24,12 +22,46 @@ pub fn run() !void {
     while (args.next()) |arg| {
         if (std.mem.eql(u8, arg, "add")) {
             const branch = args.next() orelse return ArgsParseError.MissingValue;
-            std.debug.print("(add) branch name is: {s}", .{branch});
+            try add(branch);
         } else if (std.mem.eql(u8, arg, "remove")) {
             const branch = args.next() orelse return ArgsParseError.MissingValue;
-            std.debug.print("(remove) branch name is: {s}", .{branch});
+            try remove(branch);
         } else {
             return ArgsParseError.UnknownValue;
         }
+    }
+}
+
+fn add(branch: []const u8) !void {
+    const argv = [_][]const u8{ "echo", branch };
+
+    try spawnShell(argv[0..]);
+}
+
+fn remove(branch: []const u8) !void {
+    const argv = [_][]const u8{ "echo", branch };
+
+    try spawnShell(argv[0..]);
+}
+
+fn spawnShell(argv: []const []const u8) !void {
+    var cp = std.process.Child.init(argv, std.heap.page_allocator);
+
+    try cp.spawn();
+    const term = try cp.wait();
+
+    switch (term) {
+        .Signal => {
+            std.debug.print("Command signal with code {any}\n", .{term});
+        },
+        .Stopped => {
+            std.debug.print("Command stopped with code {any}\n", .{term});
+        },
+        .Unknown => {
+            std.debug.print("Command failed with code {any}\n", .{term});
+        },
+        .Exited => {
+            std.debug.print("Command exited with code {any}\n", .{term});
+        },
     }
 }
