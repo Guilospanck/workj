@@ -1,8 +1,10 @@
 #!/bin/bash
 set -euo pipefail
 
+# Usage: new_tab larry /tmp
 new_tab(){
-	zellij action new-tab --name $1
+	local LAYOUT_CONFIG="$PWD/configs/layout.kdl"
+	zellij action new-tab --name $1 --cwd "$2" --layout $LAYOUT_CONFIG
 }
 
 # Example:
