@@ -19,14 +19,14 @@ add(){
 	get_or_create_worktree_directory $BRANCH_NAME
 
 	if git rev-parse --verify $BRANCH_NAME >/dev/null 2>&1; then
-	  echo "Branch exists"
+	  # Branch exists
 	  git worktree add $WORKTREE_DIRECTORY $BRANCH_NAME -q
 	else
-	  echo "Branch does not exist"
+	  # Branch does not exist
 	  git worktree add $WORKTREE_DIRECTORY -b $BRANCH_NAME $MAIN_BRANCH -q
 	fi
 
-	echo "Directory: $WORKTREE_DIRECTORY"
+	echo $WORKTREE_DIRECTORY
 }
 
 # Usage: remove <branch_name>

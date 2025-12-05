@@ -17,7 +17,7 @@ pub fn run() !void {
     defer args.deinit();
 
     // Remove the program name
-    _ = args.next();
+    const programName = args.next();
 
     while (args.next()) |arg| {
         if (std.mem.eql(u8, arg, "add")) {
@@ -27,13 +27,25 @@ pub fn run() !void {
             const branch = args.next() orelse return ArgsParseError.MissingValue;
             try remove(branch);
         } else {
+            std.debug.print("Usage: {any} add/remove <branch_name>\n", .{programName});
             return ArgsParseError.UnknownValue;
         }
     }
 }
 
 fn add(branch: []const u8) !void {
-    const argv = [_][]const u8{ "echo", branch };
+    const alloc = std.heap.page_allocator;
+
+    // Get current directory
+    const cwd_dir = std.fs.cwd();
+    const abs_path = try cwd_dir.realpathAlloc(alloc, ".");
+    defer alloc.free(abs_path);
+
+    // Build the workj.sh executable path
+    const workjExec = try std.fmt.allocPrint(alloc, "{s}/scripts/workj.sh", .{abs_path});
+    defer alloc.free(workjExec);
+
+    const argv = [_][]const u8{ workjExec, "add", branch };
 
     try spawnShell(argv[0..]);
 }
