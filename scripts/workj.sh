@@ -16,7 +16,8 @@ add() {
 }
 
 remove() {
-	echo "(remove) Hey from script: $1"
+	local BRANCH_NAME=$1
+	"$PWD/scripts/git_worktree.sh" remove $BRANCH_NAME
 }
 
 "$@"

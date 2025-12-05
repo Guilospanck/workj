@@ -25,7 +25,7 @@ pub fn run() !void {
             try add(allocator, branch);
         } else if (std.mem.eql(u8, arg, "remove")) {
             const branch = args.next() orelse return ArgsParseError.MissingValue;
-            try remove(branch);
+            try remove(allocator, branch);
         } else {
             std.debug.print("Usage: {any} add/remove <branch_name>\n", .{programName});
             return ArgsParseError.UnknownValue;
@@ -42,8 +42,11 @@ fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
     try spawnShell(argv[0..]);
 }
 
-fn remove(branch: []const u8) !void {
-    const argv = [_][]const u8{ "echo", branch };
+fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
+    const workjExec = try getScriptAbsPath(allocator, "workj.sh");
+    defer allocator.free(workjExec);
+
+    const argv = [_][]const u8{ workjExec, "remove", branch };
 
     try spawnShell(argv[0..]);
 }
