@@ -25,6 +25,7 @@ pub fn run() !void {
     var args = try std.process.argsWithAllocator(allocator);
     defer args.deinit();
 
+    // Remove program name
     _ = args.next();
 
     const cmd = try expectArg(&args, "<command>");

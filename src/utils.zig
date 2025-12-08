@@ -51,3 +51,7 @@ pub fn isInGitRepo(allocator: std.mem.Allocator) !bool {
     // exit code 0 means inside a Git repo
     return result == .Exited and result.Exited == 0;
 }
+
+pub fn trimEnd(s: []const u8) []const u8 {
+    return std.mem.trimEnd(u8, s, "\n");
+}
