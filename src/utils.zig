@@ -17,11 +17,21 @@ pub fn isInGitRepo(allocator: std.mem.Allocator) !bool {
     cp.stdout_behavior = .Ignore;
     cp.stderr_behavior = .Ignore;
 
-    try cp.spawn();
-
-    const result = try cp.wait();
+    const result = try cp.spawnAndWait();
 
     // exit code 0 means inside a Git repo
+    return result == .Exited and result.Exited == 0;
+}
+
+pub fn isZellijInstalled(allocator: std.mem.Allocator) !bool {
+    const argv = [_][]const u8{ "command", "-v", "zellij" };
+
+    var cp = std.process.Child.init(&argv, allocator);
+    cp.stdout_behavior = .Ignore;
+    cp.stderr_behavior = .Ignore;
+
+    const result = try cp.spawnAndWait();
+
     return result == .Exited and result.Exited == 0;
 }
 

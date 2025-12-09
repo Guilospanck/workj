@@ -22,6 +22,11 @@ pub fn run() !void {
         return;
     }
 
+    if (!try utils.isZellijInstalled(allocator)) {
+        std.debug.print("Zellij is not installed.\n", .{});
+        return;
+    }
+
     var args = try std.process.argsWithAllocator(allocator);
     defer args.deinit();
 

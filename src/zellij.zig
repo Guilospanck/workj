@@ -3,7 +3,6 @@ const utils = @import("utils.zig");
 const constants = @import("constants.zig");
 const logger = @import("logger.zig");
 
-// TODO: check if zellij is installed
 // TODO: for the remove, use `go-to-tab-name` and `close-tab` zellij action functions
 pub fn newTab(allocator: std.mem.Allocator, branch: []const u8, worktree_directory: []const u8) !void {
     const abs_path = try utils.getAbsPath(allocator);
