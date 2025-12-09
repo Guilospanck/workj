@@ -2,33 +2,10 @@ const std = @import("std");
 const logger = @import("logger.zig");
 
 pub fn getAbsPath(allocator: std.mem.Allocator) ![]const u8 {
-    // Get current absolute path
     const cwd_dir = std.fs.cwd();
     const abs_path = try cwd_dir.realpathAlloc(allocator, ".");
 
     return abs_path;
-}
-
-pub fn spawnShell(allocator: std.mem.Allocator, argv: []const []const u8) !void {
-    var cp = std.process.Child.init(argv, allocator);
-
-    try cp.spawn();
-    const term = try cp.wait();
-
-    switch (term) {
-        .Signal => |sig| {
-            logger.debug("Terminated by signal {d}\n", .{sig});
-        },
-        .Stopped => |sig| {
-            logger.debug("Stopped by signal {d}\n", .{sig});
-        },
-        .Unknown => |value| {
-            logger.debug("Unknown termination {d}\n", .{value});
-        },
-        .Exited => |code| {
-            logger.debug("Process exited with code {d}\n", .{code});
-        },
-    }
 }
 
 pub fn isInGitRepo(allocator: std.mem.Allocator) !bool {

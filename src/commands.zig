@@ -3,6 +3,7 @@ const git = @import("git.zig");
 const utils = @import("utils.zig");
 const constants = @import("constants.zig");
 const logger = @import("logger.zig");
+const zellij = @import("zellij.zig");
 
 const Command = enum {
     Add,
@@ -37,19 +38,22 @@ pub fn runCommand(allocator: std.mem.Allocator, branch: []const u8, cmd: []const
 }
 
 fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
+    const worktree_directory = try git.getOrCreateWorktreeDirectory(allocator, branch);
+    defer allocator.free(worktree_directory);
+
     const worktree_exists = try git.gitWorktreeExists(allocator, branch);
     if (worktree_exists) {
         logger.debug("Worktree already exists. Will not add it.", .{});
-        // TODO: open zellij layouts on the already created worktree
+        try zellij.newTab(allocator, branch, worktree_directory);
+
         return;
     }
-
-    const worktree_directory = try git.getOrCreateWorktreeDirectory(allocator, branch);
-    defer allocator.free(worktree_directory);
 
     const branch_exists = try git.gitBranchExists(allocator, branch);
 
     try git.gitWorktreeAdd(allocator, worktree_directory, branch, branch_exists);
+
+    try zellij.newTab(allocator, branch, worktree_directory);
 }
 
 fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
