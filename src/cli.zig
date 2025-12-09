@@ -31,7 +31,7 @@ pub fn run() !void {
     const cmd = try expectArg(&args, "<command>");
     const branch = try expectArg(&args, "<branch_name>");
 
-    const response = try commands.parseCommand(allocator, branch, cmd);
+    const response = try commands.runCommand(allocator, branch, cmd);
     if (response == null) {
         std.debug.print("{s}", .{constants.USAGE});
     }

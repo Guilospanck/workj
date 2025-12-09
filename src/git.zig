@@ -3,39 +3,7 @@ const utils = @import("utils.zig");
 const constants = @import("constants.zig");
 const logger = @import("logger.zig");
 
-pub fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
-    const workjExec = try utils.getScriptAbsPath(allocator, constants.WORKJ_SCRIPT);
-    defer allocator.free(workjExec);
-
-    const worktreeExists = try gitWorktreeExists(allocator, branch);
-    if (worktreeExists) {
-        logger.debug("Worktree already exists. Will not add it.", .{});
-        // TODO: open zellij layouts on the already created worktree
-        return;
-    }
-
-    const worktreeDirectory = try getOrCreateWorktreeDirectory(allocator, branch);
-    defer allocator.free(worktreeDirectory);
-
-    const branchExists = try gitBranchExists(allocator, branch);
-
-    try gitWorktreeAdd(allocator, worktreeDirectory, branch, branchExists);
-}
-
-pub fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
-    const workjExec = try utils.getScriptAbsPath(allocator, constants.WORKJ_SCRIPT);
-    defer allocator.free(workjExec);
-
-    const worktreeExists = try gitWorktreeExists(allocator, branch);
-    if (!worktreeExists) {
-        logger.debug("Worktree does not exist. Nothing to remove.", .{});
-        return;
-    }
-
-    try gitWorktreeRemove(allocator, branch);
-}
-
-fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: []const u8, branchExists: bool) !void {
+pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: []const u8, branchExists: bool) !void {
     logger.debug("Directory: {s}\nBranch: {s}\nExists: {any}\n", .{ directory, branch, branchExists });
 
     var argv: []const []const u8 = undefined; // slice
@@ -52,14 +20,14 @@ fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: [
     _ = try cp.wait();
 }
 
-fn gitWorktreeRemove(allocator: std.mem.Allocator, branch: []const u8) !void {
+pub fn gitWorktreeRemove(allocator: std.mem.Allocator, branch: []const u8) !void {
     const argv = [_][]const u8{ "git", "worktree", "remove", branch };
 
     var cp = std.process.Child.init(&argv, allocator);
     _ = try cp.spawnAndWait();
 }
 
-fn gitBranchExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
+pub fn gitBranchExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
     const argv = [_][]const u8{ "git", "rev-parse", "--verify", branch };
     var cp = std.process.Child.init(&argv, allocator);
 
@@ -72,7 +40,7 @@ fn gitBranchExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
     return result == .Exited and result.Exited == 0;
 }
 
-fn getOrCreateWorktreeDirectory(allocator: std.mem.Allocator, branch: []const u8) ![]const u8 {
+pub fn getOrCreateWorktreeDirectory(allocator: std.mem.Allocator, branch: []const u8) ![]const u8 {
     const projectRootDirectory = try getProjectRootLevelDirectory(allocator);
     defer allocator.free(projectRootDirectory);
 
@@ -91,7 +59,7 @@ fn getOrCreateWorktreeDirectory(allocator: std.mem.Allocator, branch: []const u8
     return worktreeDirectory;
 }
 
-fn getProjectRootLevelDirectory(allocator: std.mem.Allocator) ![]const u8 {
+pub fn getProjectRootLevelDirectory(allocator: std.mem.Allocator) ![]const u8 {
     const argv = [_][]const u8{ "git", "rev-parse", "--show-toplevel" };
 
     const result = try std.process.Child.run(.{
@@ -103,7 +71,7 @@ fn getProjectRootLevelDirectory(allocator: std.mem.Allocator) ![]const u8 {
     return result.stdout;
 }
 
-fn getProjectName(allocator: std.mem.Allocator) ![]const u8 {
+pub fn getProjectName(allocator: std.mem.Allocator) ![]const u8 {
     const argv = [_][]const u8{ "sh", "-c", "git remote get-url origin | xargs basename -s .git" };
 
     const result = try std.process.Child.run(.{ .allocator = allocator, .argv = &argv });
@@ -112,7 +80,7 @@ fn getProjectName(allocator: std.mem.Allocator) ![]const u8 {
     return result.stdout;
 }
 
-fn gitWorktreeExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
+pub fn gitWorktreeExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
     const argWithGrep = try std.fmt.allocPrint(allocator, "git worktree list --porcelain | grep -q \"branch refs/heads/{s}\"", .{branch});
     defer allocator.free(argWithGrep);
 
