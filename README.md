@@ -47,7 +47,7 @@ Run it:
 
 ### TODOs
 
-- [ ] Convert shell to zig
+- [x] Convert shell to zig
 - [ ] Add tests
 - [ ] Validate the outputs to stdout/stderr
 - [ ] Add a workj config file
