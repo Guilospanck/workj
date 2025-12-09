@@ -3,12 +3,10 @@ const utils = @import("utils.zig");
 const constants = @import("constants.zig");
 const logger = @import("logger.zig");
 
-pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: []const u8, branchExists: bool) !void {
-    logger.debug("Directory: {s}\nBranch: {s}\nExists: {any}\n", .{ directory, branch, branchExists });
-
+pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: []const u8, branch_exists: bool) !void {
     var argv: []const []const u8 = undefined; // slice
 
-    if (branchExists) {
+    if (branch_exists) {
         argv = &.{ "git", "worktree", "add", directory, branch, "-q" };
     } else {
         argv = &.{ "git", "worktree", "add", directory, "-b", branch, constants.MAIN_BRANCH, "-q" };
@@ -16,8 +14,7 @@ pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branc
 
     var cp = std.process.Child.init(argv, allocator);
 
-    try cp.spawn();
-    _ = try cp.wait();
+    _ = try cp.spawnAndWait();
 }
 
 pub fn gitWorktreeRemove(allocator: std.mem.Allocator, branch: []const u8) !void {
@@ -34,29 +31,27 @@ pub fn gitBranchExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
     cp.stdout_behavior = .Ignore;
     cp.stderr_behavior = .Ignore;
 
-    try cp.spawn();
-    const result = try cp.wait();
+    const result = try cp.spawnAndWait();
 
     return result == .Exited and result.Exited == 0;
 }
 
 pub fn getOrCreateWorktreeDirectory(allocator: std.mem.Allocator, branch: []const u8) ![]const u8 {
-    const projectRootDirectory = try getProjectRootLevelDirectory(allocator);
-    defer allocator.free(projectRootDirectory);
+    const project_root_directory = try getProjectRootLevelDirectory(allocator);
+    defer allocator.free(project_root_directory);
 
-    const projectName = try getProjectName(allocator);
-    defer allocator.free(projectName);
+    const project_name = try getProjectName(allocator);
+    defer allocator.free(project_name);
 
-    const worktreeDirectory = try std.fmt.allocPrint(allocator, "{s}/../{s}__worktrees/{s}", .{ utils.trimEnd(projectRootDirectory), utils.trimEnd(projectName), branch });
+    const worktree_directory = try std.fmt.allocPrint(allocator, "{s}/../{s}__worktrees/{s}", .{ utils.trimEnd(project_root_directory), utils.trimEnd(project_name), branch });
 
-    const argv = [_][]const u8{ "mkdir", "-p", worktreeDirectory };
+    const argv = [_][]const u8{ "mkdir", "-p", worktree_directory };
 
     var cp = std.process.Child.init(&argv, allocator);
 
-    try cp.spawn();
-    _ = try cp.wait();
+    _ = try cp.spawnAndWait();
 
-    return worktreeDirectory;
+    return worktree_directory;
 }
 
 pub fn getProjectRootLevelDirectory(allocator: std.mem.Allocator) ![]const u8 {
@@ -81,19 +76,17 @@ pub fn getProjectName(allocator: std.mem.Allocator) ![]const u8 {
 }
 
 pub fn gitWorktreeExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
-    const argWithGrep = try std.fmt.allocPrint(allocator, "git worktree list --porcelain | grep -q \"branch refs/heads/{s}\"", .{branch});
-    defer allocator.free(argWithGrep);
+    const arg_with_grep = try std.fmt.allocPrint(allocator, "git worktree list --porcelain | grep -q \"branch refs/heads/{s}\"", .{branch});
+    defer allocator.free(arg_with_grep);
 
-    const argv = [_][]const u8{ "sh", "-c", argWithGrep };
+    const argv = [_][]const u8{ "sh", "-c", arg_with_grep };
 
     var cp = std.process.Child.init(&argv, allocator);
 
     cp.stdout_behavior = .Ignore;
     cp.stderr_behavior = .Ignore;
 
-    try cp.spawn();
-
-    const result = try cp.wait();
+    const result = try cp.spawnAndWait();
 
     return result == .Exited and result.Exited == 0;
 }

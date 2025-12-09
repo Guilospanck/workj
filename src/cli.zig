@@ -8,10 +8,10 @@ const ArgsParseError = error{ MissingValue, UnknownValue };
 
 pub fn run() !void {
     // Allocator
-    var debugAlloc: std.heap.DebugAllocator(.{}) = .init;
-    const allocator = debugAlloc.allocator();
+    var debug_alloc: std.heap.DebugAllocator(.{}) = .init;
+    const allocator = debug_alloc.allocator();
     defer {
-        const deinit_result = debugAlloc.deinit();
+        const deinit_result = debug_alloc.deinit();
         if (deinit_result != .ok) {
             logger.err("DebugAllocator deinit reported error: {any}\n", .{deinit_result});
         }

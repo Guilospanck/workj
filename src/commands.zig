@@ -20,13 +20,13 @@ const Command = enum {
 };
 
 pub fn runCommand(allocator: std.mem.Allocator, branch: []const u8, cmd: []const u8) !?void {
-    const parsedCommand = Command.fromString(cmd);
+    const parsed_command = Command.fromString(cmd);
 
-    if (parsedCommand == null) {
+    if (parsed_command == null) {
         return null;
     }
 
-    switch (parsedCommand.?) {
+    switch (parsed_command.?) {
         Command.Add => {
             try add(allocator, branch);
         },
@@ -37,30 +37,24 @@ pub fn runCommand(allocator: std.mem.Allocator, branch: []const u8, cmd: []const
 }
 
 fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
-    const workjExec = try utils.getScriptAbsPath(allocator, constants.WORKJ_SCRIPT);
-    defer allocator.free(workjExec);
-
-    const worktreeExists = try git.gitWorktreeExists(allocator, branch);
-    if (worktreeExists) {
+    const worktree_exists = try git.gitWorktreeExists(allocator, branch);
+    if (worktree_exists) {
         logger.debug("Worktree already exists. Will not add it.", .{});
         // TODO: open zellij layouts on the already created worktree
         return;
     }
 
-    const worktreeDirectory = try git.getOrCreateWorktreeDirectory(allocator, branch);
-    defer allocator.free(worktreeDirectory);
+    const worktree_directory = try git.getOrCreateWorktreeDirectory(allocator, branch);
+    defer allocator.free(worktree_directory);
 
-    const branchExists = try git.gitBranchExists(allocator, branch);
+    const branch_exists = try git.gitBranchExists(allocator, branch);
 
-    try git.gitWorktreeAdd(allocator, worktreeDirectory, branch, branchExists);
+    try git.gitWorktreeAdd(allocator, worktree_directory, branch, branch_exists);
 }
 
 fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
-    const workjExec = try utils.getScriptAbsPath(allocator, constants.WORKJ_SCRIPT);
-    defer allocator.free(workjExec);
-
-    const worktreeExists = try git.gitWorktreeExists(allocator, branch);
-    if (!worktreeExists) {
+    const worktree_exists = try git.gitWorktreeExists(allocator, branch);
+    if (!worktree_exists) {
         logger.debug("Worktree does not exist. Nothing to remove.", .{});
         return;
     }

@@ -1,16 +1,12 @@
 const std = @import("std");
 const logger = @import("logger.zig");
 
-pub fn getScriptAbsPath(allocator: std.mem.Allocator, script: []const u8) ![]const u8 {
+pub fn getAbsPath(allocator: std.mem.Allocator) ![]const u8 {
     // Get current absolute path
     const cwd_dir = std.fs.cwd();
     const abs_path = try cwd_dir.realpathAlloc(allocator, ".");
-    defer allocator.free(abs_path);
 
-    // Build the `script` executable path
-    const workjExec = try std.fmt.allocPrint(allocator, "{s}/scripts/{s}", .{ abs_path, script });
-
-    return workjExec;
+    return abs_path;
 }
 
 pub fn spawnShell(allocator: std.mem.Allocator, argv: []const []const u8) !void {
