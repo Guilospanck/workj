@@ -26,9 +26,13 @@ pub fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
     const workjExec = try utils.getScriptAbsPath(allocator, constants.WORKJ_SCRIPT);
     defer allocator.free(workjExec);
 
-    const argv = [_][]const u8{ workjExec, "remove", branch };
+    const worktreeExists = try gitWorktreeExists(allocator, branch);
+    if (!worktreeExists) {
+        logger.debug("Worktree does not exist. Nothing to remove.", .{});
+        return;
+    }
 
-    try utils.spawnShell(allocator, argv[0..]);
+    try gitWorktreeRemove(allocator, branch);
 }
 
 fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: []const u8, branchExists: bool) !void {
@@ -46,6 +50,13 @@ fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: [
 
     try cp.spawn();
     _ = try cp.wait();
+}
+
+fn gitWorktreeRemove(allocator: std.mem.Allocator, branch: []const u8) !void {
+    const argv = [_][]const u8{ "git", "worktree", "remove", branch };
+
+    var cp = std.process.Child.init(&argv, allocator);
+    _ = try cp.spawnAndWait();
 }
 
 fn gitBranchExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
