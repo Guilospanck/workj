@@ -63,5 +63,7 @@ fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
         return;
     }
 
+    try zellij.closeTab(allocator, branch);
+
     try git.gitWorktreeRemove(allocator, branch);
 }
