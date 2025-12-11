@@ -39,6 +39,29 @@ pub fn trimEnd(s: []const u8) []const u8 {
     return std.mem.trimEnd(u8, s, "\n");
 }
 
+/// Allocates and returns a writable copy of the given `s` slice.
+///
+/// This function allocates a new buffer of length `s.len` using the
+/// provided `allocator`, copies all bytes from `s` into it, and returns
+/// the resulting `[]u8` slice pointing at the new memory.  The caller
+/// is responsible for freeing the returned slice when it is no longer
+/// needed using `allocator.free(...)`.
+///
+/// This is useful when you need to own a heap-allocated, mutable copy
+/// of a `[]const u8` string or byte buffer.
+///
+/// - `allocator`: the allocator to use for memory allocation
+/// - `s`: the source slice to clone
+/// - returns: a new `[]u8` with the same contents as `s`
+/// - errors: any allocation failure from `allocator.alloc(...)`
+///
+/// Example:
+/// ```zig
+/// const copy = try clone(allocator, someStr);
+/// defer allocator.free(copy);
+/// ```
+///
+/// `@memcpy` is used internally to copy the bytes.
 pub fn clone(allocator: std.mem.Allocator, s: []const u8) ![]u8 {
     const out = try allocator.alloc(u8, s.len);
     @memcpy(out, s);
