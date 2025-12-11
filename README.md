@@ -5,11 +5,17 @@ Git worktrees in Zellij.
 
 A simplified way of using [Git worktrees](https://git-scm.com/docs/git-worktree) with [Zellij](https://zellij.dev).
 
+## Configuration
+
+Before using it, check if the default configs (`/configs/*`) make sense for you. If they don't, you can create a `~/.workj/config.cfg` file. The valid keys are displayed in `/configs/workj_config.cfg`.
+
+- `main_branch` is the start point for the new branch (if it doesn't exist);
+- `layout` is the path to the [Zellij layout](https://zellij.dev/documentation/creating-a-layout.html) you want to use when starting a new `workj add <branch>` command.
+
+>[!NOTE]
+>If the config file doesn't exist at `~/.workj/config.cfg`, the default values (the ones inside `/configs/*`) will be used.
+
 ## Usage
-
-The usage is very simple. First go to `/configs/layout.kdl` and make sure that the configuration there makes sense for your purposes. It's customisable, so change according to [Zellij layouts](https://zellij.dev/documentation/creating-a-layout.html).
-
-After that, it's as easy as:
 
 ```sh
 workj <command> <branch_name>
@@ -50,5 +56,5 @@ Run it:
 - [x] Convert shell to zig
 - [ ] Add tests
 - [ ] Validate the outputs to stdout/stderr
-- [ ] Add a workj config file
+- [x] Add a workj config file
 - [ ] Validate allocator to use

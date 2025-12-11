@@ -28,6 +28,7 @@ pub fn run() !void {
         return;
     }
 
+    // Initialise app-level configs
     try config.init(allocator);
     defer config.deinit(allocator);
 
