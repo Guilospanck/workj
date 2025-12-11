@@ -7,12 +7,7 @@ pub fn newTab(allocator: std.mem.Allocator, branch: []const u8, worktree_directo
     const abs_path = try utils.getAbsPath(allocator);
     defer allocator.free(abs_path);
 
-    const layout = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ abs_path, config.get().layout });
-    defer allocator.free(layout);
-
-    logger.debug("Layout: {s}", .{layout});
-
-    const argv = [_][]const u8{ "zellij", "action", "new-tab", "--name", branch, "--cwd", worktree_directory, "--layout", layout };
+    const argv = [_][]const u8{ "zellij", "action", "new-tab", "--name", branch, "--cwd", worktree_directory, "--layout", config.get().layout };
 
     var cp = std.process.Child.init(&argv, allocator);
 

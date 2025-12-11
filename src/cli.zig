@@ -28,8 +28,7 @@ pub fn run() !void {
         return;
     }
 
-    // TODO: parse args for the config
-    try config.init(allocator, null);
+    try config.init(allocator);
     defer config.deinit(allocator);
 
     var args = try std.process.argsWithAllocator(allocator);
