@@ -15,18 +15,26 @@ pub fn init(allocator: std.mem.Allocator) !void {
     const abs_path = try utils.getAbsPath(allocator);
     defer allocator.free(abs_path);
 
-    var config_map = std.StringHashMap([]const u8).init(allocator);
-    defer config_map.deinit();
-
     const default_layout = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ abs_path, constants.DEFAULT_LAYOUT_CONFIG });
     defer allocator.free(default_layout);
 
     const default_main_branch = try std.fmt.allocPrint(allocator, "{s}", .{constants.DEFAULT_MAIN_BRANCH});
     defer allocator.free(default_main_branch);
 
-    const fileExists = std.fs.cwd().openFile(constants.CONFIG_PATH, .{ .mode = .read_only });
+    const home_dir = try utils.getHomeDir(allocator);
+    defer allocator.free(home_dir);
+
+    const config_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ home_dir, constants.CONFIG_PATH });
+    defer allocator.free(config_path);
+
+    logger.debug("Checking config file at {s}", .{config_path});
+    const fileExists = std.fs.openFileAbsolute(config_path, .{ .mode = .read_only });
+
+    var layout = default_layout;
+    var main_branch = default_main_branch;
 
     if (fileExists) |file| {
+        logger.debug("Config at {s} exists. Reading it into list.", .{config_path});
         defer file.close();
 
         const file_stat = try file.stat();
@@ -44,17 +52,22 @@ pub fn init(allocator: std.mem.Allocator) !void {
             const key = std.mem.trim(u8, trimmed[0..eqIndex], " \t");
             const value = std.mem.trim(u8, trimmed[(eqIndex + 1)..], " \t");
 
-            // store
-            _ = try config_map.put(key, value);
+            if (value.len == 0) continue;
+
+            if (std.mem.eql(u8, key, "layout")) {
+                layout = try utils.clone(allocator, value);
+            } else if (std.mem.eql(u8, key, "main_branch")) {
+                main_branch = try utils.clone(allocator, value);
+            }
         }
-    } else |_| {
-        logger.debug("Error opening file at {s}. Will use default configs.", .{constants.CONFIG_PATH});
+    } else |err| {
+        logger.debug("Error {any} opening file at {s}. Will use default configs.", .{ err, config_path });
     }
 
-    const layout = config_map.get("layout") orelse default_layout;
-    const main_branch = config_map.get("main_branch") orelse default_main_branch;
-
     global = Self{ .layout = try utils.clone(allocator, layout), .main_branch = try utils.clone(allocator, main_branch) };
+
+    defer allocator.free(layout);
+    defer allocator.free(main_branch);
 
     logger.debug("Global configs:\nlayout: {s}\nmain branch: {s}", .{ layout, main_branch });
 

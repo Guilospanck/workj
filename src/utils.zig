@@ -68,3 +68,15 @@ pub fn clone(allocator: std.mem.Allocator, s: []const u8) ![]u8 {
 
     return out;
 }
+
+pub fn getHomeDir(allocator: std.mem.Allocator) ![]u8 {
+    const maybeHome = std.process.getEnvVarOwned(allocator, "HOME") catch |err| {
+        if (err == std.process.GetEnvVarOwnedError.EnvironmentVariableNotFound) {
+            // Fallback to Windows user profile
+            return std.process.getEnvVarOwned(allocator, "USERPROFILE");
+        } else {
+            return err;
+        }
+    };
+    return maybeHome;
+}
