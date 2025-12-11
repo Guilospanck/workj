@@ -1,13 +1,13 @@
 const std = @import("std");
 const utils = @import("utils.zig");
-const constants = @import("constants.zig");
 const logger = @import("logger.zig");
+const config = @import("config.zig");
 
 pub fn newTab(allocator: std.mem.Allocator, branch: []const u8, worktree_directory: []const u8) !void {
     const abs_path = try utils.getAbsPath(allocator);
     defer allocator.free(abs_path);
 
-    const layout = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ abs_path, constants.LAYOUT_CONFIG });
+    const layout = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ abs_path, config.get().layout });
     defer allocator.free(layout);
 
     logger.debug("Layout: {s}", .{layout});

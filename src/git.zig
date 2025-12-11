@@ -2,6 +2,7 @@ const std = @import("std");
 const utils = @import("utils.zig");
 const constants = @import("constants.zig");
 const logger = @import("logger.zig");
+const config = @import("config.zig");
 
 pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: []const u8, branch_exists: bool) !void {
     var argv: []const []const u8 = undefined; // slice
@@ -9,7 +10,7 @@ pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branc
     if (branch_exists) {
         argv = &.{ "git", "worktree", "add", directory, branch, "-q" };
     } else {
-        argv = &.{ "git", "worktree", "add", directory, "-b", branch, constants.MAIN_BRANCH, "-q" };
+        argv = &.{ "git", "worktree", "add", directory, "-b", branch, config.get().main_branch, "-q" };
     }
 
     var cp = std.process.Child.init(argv, allocator);

@@ -38,3 +38,10 @@ pub fn isZellijInstalled(allocator: std.mem.Allocator) !bool {
 pub fn trimEnd(s: []const u8) []const u8 {
     return std.mem.trimEnd(u8, s, "\n");
 }
+
+pub fn clone(allocator: std.mem.Allocator, s: []const u8) ![]u8 {
+    const out = try allocator.alloc(u8, s.len);
+    @memcpy(out, s);
+
+    return out;
+}

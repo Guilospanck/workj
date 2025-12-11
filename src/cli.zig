@@ -3,6 +3,7 @@ const logger = @import("logger.zig");
 const constants = @import("constants.zig");
 const utils = @import("utils.zig");
 const commands = @import("commands.zig");
+const config = @import("config.zig");
 
 const ArgsParseError = error{ MissingValue, UnknownValue };
 
@@ -26,6 +27,10 @@ pub fn run() !void {
         std.debug.print("Zellij is not installed.\n", .{});
         return;
     }
+
+    // TODO: parse args for the config
+    try config.init(allocator, null);
+    defer config.deinit(allocator);
 
     var args = try std.process.argsWithAllocator(allocator);
     defer args.deinit();

@@ -1,7 +1,6 @@
 const std = @import("std");
 const git = @import("git.zig");
 const utils = @import("utils.zig");
-const constants = @import("constants.zig");
 const logger = @import("logger.zig");
 const zellij = @import("zellij.zig");
 

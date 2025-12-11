@@ -1,3 +1,5 @@
+// This is the default file used by the application if you don't pass
+// in your own zellij layout.
 layout {
   tab {
     pane split_direction="horizontal" {

@@ -51,3 +51,4 @@ Run it:
 - [ ] Add tests
 - [ ] Validate the outputs to stdout/stderr
 - [ ] Add a workj config file
+- [ ] Validate allocator to use
