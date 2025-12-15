@@ -39,6 +39,8 @@ workj remove potato
 
 ## Development
 
+### Build
+
 Build it:
 
 ```sh
@@ -47,14 +49,46 @@ zig build
 
 Run it:
 
-```
+```sh
 ./zig-out/bin/workj <commmand> <branch_name>
 ```
+
+Or you can also do both of them in one line:
+
+```sh
+zig build run -- <command> <branch_name>
+```
+
+### Tests
+
+You can run tests with:
+
+```sh
+zig build test
+```
+
+Be aware that it will only print to stderr if there is an actual error in the test or if you did use something like `std.debug.print`. 
+
+Optionally, you can also run a specific test file with:
+
+```sh
+zig test <path_to_test_file>
+# zig test src/git_test.zig
+```
+
+or all of them:
+
+```sh
+zig test src/tests.zig
+```
+
+>[!NOTE]
+>Each `*_test.zig` file you create, you MUST import it in `src/tests.zig` in order for the `zig build test` command to find it.
 
 ### TODOs
 
 - [x] Convert shell to zig
-- [ ] Add tests
-- [ ] Validate the outputs to stdout/stderr
 - [x] Add a workj config file
+- [~] Add tests
+- [ ] Validate the outputs to stdout/stderr
 - [ ] Validate allocator to use
