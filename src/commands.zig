@@ -40,6 +40,13 @@ fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
     const worktree_directory = try git.getOrCreateWorktreeDirectory(allocator, branch);
     defer allocator.free(worktree_directory);
 
+    zellij.newTab(allocator, branch, worktree_directory) catch |err| {
+        switch (err) {
+            zellij.ZellijErrors.ZellijTabAlreadyExists => return,
+            else => return err,
+        }
+    };
+
     const worktree_exists = try git.gitWorktreeExists(allocator, branch);
     if (worktree_exists) {
         logger.info("Worktree already exists. Will not add it.", .{});
@@ -51,8 +58,6 @@ fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
     const branch_exists = try git.gitBranchExists(allocator, branch);
 
     try git.gitWorktreeAdd(allocator, worktree_directory, branch, branch_exists);
-
-    try zellij.newTab(allocator, branch, worktree_directory);
 }
 
 fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {

@@ -10,4 +10,6 @@ build:
 release:
   zig build -Doptimize=ReleaseSafe
 
+install:
+  ./install.sh
 

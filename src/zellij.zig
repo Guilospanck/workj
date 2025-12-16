@@ -3,6 +3,8 @@ const utils = @import("utils.zig");
 const logger = @import("logger.zig");
 const config = @import("config.zig");
 
+pub const ZellijErrors = error{ZellijTabAlreadyExists};
+
 pub fn newTab(allocator: std.mem.Allocator, branch: []const u8, worktree_directory: []const u8) !void {
     var all_tab_names = try queryAllTabNames(allocator);
     defer {
@@ -15,7 +17,7 @@ pub fn newTab(allocator: std.mem.Allocator, branch: []const u8, worktree_directo
 
     if (all_tab_names.contains(branch)) {
         logger.info("There is already a tab with the name \"{s}\", please select another.", .{branch});
-        return;
+        return ZellijErrors.ZellijTabAlreadyExists;
     }
 
     const abs_path = try utils.getAbsPath(allocator);
