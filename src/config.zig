@@ -7,6 +7,7 @@ const Self = @This();
 
 layout: []u8,
 main_branch: []u8,
+cwd: []u8,
 
 var global: Self = undefined;
 var initialised = false;
@@ -14,12 +15,6 @@ var initialised = false;
 pub fn init(allocator: std.mem.Allocator) !void {
     const abs_path = try utils.getAbsPath(allocator);
     defer allocator.free(abs_path);
-
-    const default_layout = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ abs_path, constants.DEFAULT_LAYOUT_CONFIG });
-    defer allocator.free(default_layout);
-
-    const default_main_branch = try std.fmt.allocPrint(allocator, "{s}", .{constants.DEFAULT_MAIN_BRANCH});
-    defer allocator.free(default_main_branch);
 
     const home_dir = try utils.getHomeDir(allocator);
     defer allocator.free(home_dir);
@@ -30,8 +25,23 @@ pub fn init(allocator: std.mem.Allocator) !void {
     logger.debug("Checking config file at {s}", .{config_path});
     const fileExists = std.fs.openFileAbsolute(config_path, .{ .mode = .read_only });
 
-    var layout = default_layout;
-    var main_branch = default_main_branch;
+    // layout
+    var layout = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ abs_path, constants.DEFAULT_LAYOUT_CONFIG });
+    defer allocator.free(layout);
+
+    // main branch
+    var main_branch = try std.fmt.allocPrint(allocator, "{s}", .{constants.DEFAULT_MAIN_BRANCH});
+    defer allocator.free(main_branch);
+
+    // CWD
+    const cwd = std.process.getEnvVarOwned(allocator, "CWD") catch |err| blk: {
+        if (err == std.process.GetEnvVarOwnedError.EnvironmentVariableNotFound) {
+            break :blk try std.process.getCwdAlloc(allocator);
+        } else {
+            return err;
+        }
+    };
+    defer allocator.free(cwd);
 
     if (fileExists) |file| {
         logger.debug("Config at {s} exists. Reading it into list.", .{config_path});
@@ -55,8 +65,10 @@ pub fn init(allocator: std.mem.Allocator) !void {
             if (value.len == 0) continue;
 
             if (std.mem.eql(u8, key, "layout")) {
+                allocator.free(layout);
                 layout = try utils.clone(allocator, value);
             } else if (std.mem.eql(u8, key, "main_branch")) {
+                allocator.free(main_branch);
                 main_branch = try utils.clone(allocator, value);
             }
         }
@@ -64,12 +76,9 @@ pub fn init(allocator: std.mem.Allocator) !void {
         logger.debug("Error {any} opening file at {s}. Will use default configs.", .{ err, config_path });
     }
 
-    global = Self{ .layout = try utils.clone(allocator, layout), .main_branch = try utils.clone(allocator, main_branch) };
+    global = Self{ .layout = try utils.clone(allocator, layout), .main_branch = try utils.clone(allocator, main_branch), .cwd = try utils.clone(allocator, cwd) };
 
-    defer allocator.free(layout);
-    defer allocator.free(main_branch);
-
-    logger.debug("Global configs:\nlayout: {s}\nmain branch: {s}", .{ layout, main_branch });
+    logger.debug("Global configs:\nlayout: {s}\nmain branch: {s}\nCWD: {s}", .{ layout, main_branch, cwd });
 
     initialised = true;
 }
@@ -79,6 +88,7 @@ pub fn deinit(allocator: std.mem.Allocator) void {
 
     allocator.free(global.layout);
     allocator.free(global.main_branch);
+    allocator.free(global.cwd);
 
     initialised = false;
 }
@@ -87,4 +97,11 @@ pub fn get() *const Self {
     if (!initialised) @panic("Config not initialised.");
 
     return &global;
+}
+
+pub fn setCwd(allocator: std.mem.Allocator, cwd: []const u8) !void {
+    if (!initialised) @panic("Config not initialised.");
+
+    allocator.free(global.cwd);
+    global.cwd = try utils.clone(allocator, cwd);
 }

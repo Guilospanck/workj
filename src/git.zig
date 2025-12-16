@@ -57,10 +57,12 @@ pub fn getOrCreateWorktreeDirectory(allocator: std.mem.Allocator, branch: []cons
 
 pub fn getProjectRootLevelDirectory(allocator: std.mem.Allocator) ![]const u8 {
     const argv = [_][]const u8{ "git", "rev-parse", "--show-toplevel" };
+    const cwd = config.get().cwd;
 
     const result = try std.process.Child.run(.{
         .allocator = allocator,
         .argv = &argv,
+        .cwd = cwd,
     });
     defer allocator.free(result.stderr);
 
@@ -70,7 +72,8 @@ pub fn getProjectRootLevelDirectory(allocator: std.mem.Allocator) ![]const u8 {
 pub fn getProjectName(allocator: std.mem.Allocator) ![]const u8 {
     const argv = [_][]const u8{ "sh", "-c", "git remote get-url origin | xargs basename -s .git" };
 
-    const result = try std.process.Child.run(.{ .allocator = allocator, .argv = &argv });
+    const cwd = config.get().cwd;
+    const result = try std.process.Child.run(.{ .allocator = allocator, .argv = &argv, .cwd = cwd });
     defer allocator.free(result.stderr);
 
     return result.stdout;
