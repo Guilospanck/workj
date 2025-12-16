@@ -55,15 +55,14 @@ fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
     try zellij.newTab(allocator, branch, worktree_directory);
 }
 
-// TODO: check if the validation of worktree exists is working correctly.
 fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
+    try zellij.closeTab(allocator, branch);
+
     const worktree_exists = try git.gitWorktreeExists(allocator, branch);
     if (!worktree_exists) {
-        logger.debug("Worktree does not exist. Nothing to remove.", .{});
+        logger.info("Worktree does not exist. Nothing to remove.", .{});
         return;
     }
-
-    try zellij.closeTab(allocator, branch);
 
     try git.gitWorktreeRemove(allocator, branch);
 }

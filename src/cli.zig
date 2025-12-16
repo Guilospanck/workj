@@ -19,12 +19,12 @@ pub fn run() !void {
     }
 
     if (!try utils.isInGitRepo(allocator)) {
-        std.debug.print("Must be used inside a git repository.\n", .{});
+        logger.err("Must be used inside a git repository.\n", .{});
         return;
     }
 
     if (!try utils.isZellijInstalled(allocator)) {
-        std.debug.print("Zellij is not installed.\n", .{});
+        logger.err("Zellij is not installed.\n", .{});
         return;
     }
 
@@ -43,13 +43,13 @@ pub fn run() !void {
 
     const response = try commands.runCommand(allocator, branch, cmd);
     if (response == null) {
-        std.debug.print("{s}", .{constants.USAGE});
+        logger.info("{s}", .{constants.USAGE});
     }
 }
 
 fn expectArg(iter: *std.process.ArgIterator, message: []const u8) ArgsParseError![]const u8 {
     const arg = iter.next() orelse {
-        std.debug.print("Missing argument {s}.\n{s}\n", .{ message, constants.USAGE });
+        logger.err("Missing argument {s}.\n{s}\n", .{ message, constants.USAGE });
         return ArgsParseError.MissingValue;
     };
 
