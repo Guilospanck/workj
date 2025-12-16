@@ -5,6 +5,16 @@ Git worktrees in Zellij.
 
 A simplified way of using [Git worktrees](https://git-scm.com/docs/git-worktree) with [Zellij](https://zellij.dev).
 
+## Installing
+
+```sh
+git clone https://github.com/Guilospanck/workj.git
+cd workj/
+./install.sh
+```
+
+After that, you can run it following [Usage](#usage) section.
+
 ## Configuration
 
 Before using it, check if the default configs (`/configs/*`) make sense for you. If they don't, you can create a `~/.workj/config.cfg` file. The valid keys are displayed in `/configs/workj_config.cfg`.
