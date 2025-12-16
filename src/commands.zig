@@ -42,7 +42,7 @@ fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
 
     const worktree_exists = try git.gitWorktreeExists(allocator, branch);
     if (worktree_exists) {
-        logger.debug("Worktree already exists. Will not add it.", .{});
+        logger.info("Worktree already exists. Will not add it.", .{});
         try zellij.newTab(allocator, branch, worktree_directory);
 
         return;

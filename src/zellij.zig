@@ -4,6 +4,20 @@ const logger = @import("logger.zig");
 const config = @import("config.zig");
 
 pub fn newTab(allocator: std.mem.Allocator, branch: []const u8, worktree_directory: []const u8) !void {
+    var all_tab_names = try queryAllTabNames(allocator);
+    defer {
+        var it = all_tab_names.keyIterator();
+        while (it.next()) |key| {
+            allocator.free(key.*);
+        }
+        all_tab_names.deinit();
+    }
+
+    if (all_tab_names.contains(branch)) {
+        logger.info("There is already a tab with the name \"{s}\", please select another.", .{branch});
+        return;
+    }
+
     const abs_path = try utils.getAbsPath(allocator);
     defer allocator.free(abs_path);
 
@@ -31,7 +45,7 @@ pub fn closeTab(allocator: std.mem.Allocator, branch: []const u8) !void {
     }
 
     if (!all_tab_names.contains(branch)) {
-        logger.info("No tab named {s} exists.", .{branch});
+        logger.info("No tab named \"{s}\" exists.", .{branch});
         return;
     }
 
