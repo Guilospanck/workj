@@ -1,6 +1,25 @@
 # workj
 Git worktrees in Zellij.
 
+```sh
+                                   /$$          
+                                  | $$          
+ /$$  /$$  /$$  /$$$$$$   /$$$$$$ | $$   /$$ /$$
+| $$ | $$ | $$ /$$__  $$ /$$__  $$| $$  /$$/|__/
+| $$ | $$ | $$| $$  \ $$| $$  \__/| $$$$$$/  /$$
+| $$ | $$ | $$| $$  | $$| $$      | $$_  $$ | $$
+|  $$$$$/$$$$/|  $$$$$$/| $$      | $$ \  $$| $$
+ \_____/\___/  \______/ |__/      |__/  \__/| $$
+                                       /$$  | $$
+                                      |  $$$$$$/
+                                       \______/
+
+    🎯  workj — Git Worktree & Zellij Helper
+
+```
+
+![workj help](image.png)
+
 ## Intro
 
 A simplified way of using [Git worktrees](https://git-scm.com/docs/git-worktree) with [Zellij](https://zellij.dev).

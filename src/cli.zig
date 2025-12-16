@@ -5,7 +5,7 @@ const utils = @import("utils.zig");
 const commands = @import("commands.zig");
 const config = @import("config.zig");
 
-const ArgsParseError = error{ MissingValue, UnknownValue };
+const ArgsParseError = error{ MissingValue, UnknownValue, HelperRequired };
 
 pub fn run() !void {
     // Allocator
@@ -39,25 +39,30 @@ pub fn run() !void {
     _ = args.next();
 
     const cmd = expectArg(&args, "<command>") catch {
-        logger.info("{s}", .{constants.USAGE});
+        logger.info("\n{s}", .{constants.USAGE});
         return;
     };
     const branch = expectArg(&args, "<branch_name>") catch {
-        logger.info("{s}", .{constants.USAGE});
+        logger.info("\n{s}", .{constants.USAGE});
         return;
     };
 
     const response = try commands.runCommand(allocator, branch, cmd);
     if (response == null) {
-        logger.info("{s}", .{constants.USAGE});
+        logger.info("\n{s}", .{constants.USAGE});
     }
 }
 
 fn expectArg(iter: *std.process.ArgIterator, message: []const u8) ArgsParseError![]const u8 {
     const arg = iter.next() orelse {
-        logger.debug("Missing argument {s}.\n{s}\n", .{ message, constants.USAGE });
+        logger.debug("Missing argument {s}.\n", .{message});
         return ArgsParseError.MissingValue;
     };
+
+    if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
+        // Not really an error, but works for our purposes of showing the usage.
+        return ArgsParseError.HelperRequired;
+    }
 
     return arg;
 }
