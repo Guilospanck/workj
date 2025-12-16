@@ -45,6 +45,11 @@ Build it:
 
 ```sh
 zig build
+# just build
+
+# For release:
+zig build -Doptimize=ReleaseSafe
+# just release
 ```
 
 Run it:
@@ -57,6 +62,7 @@ Or you can also do both of them in one line:
 
 ```sh
 zig build run -- <command> <branch_name>
+# just run <command> <branch>
 ```
 
 ### Tests
@@ -65,6 +71,7 @@ You can run tests with:
 
 ```sh
 zig build test
+# just tests
 ```
 
 Be aware that it will only print to stderr if there is an actual error in the test or if you did use something like `std.debug.print`. 
