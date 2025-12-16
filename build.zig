@@ -36,19 +36,14 @@ pub fn build(b: *std.Build) void {
 
     // Add a `test` step.
     // This will be run with `zig build test`.
-    //
-    // Create the module where all the tests will be imported.
-    const tests_module = b.createModule(.{
-        .root_source_file = b.path("src/tests.zig"),
-        .target = target,
-        .optimize = optimize,
+    const test_step = b.step("test", "Run unit tests");
+
+    const run_unit_tests = b.addSystemCommand(&.{
+        b.graph.zig_exe,
+        "test",
+        "src/tests.zig",
     });
-    // Creates the tests (like a `build` but for tests)
-    const test_exe = b.addTest(.{ .root_module = tests_module });
-    // Creates a `Step` command from an `exe`.
-    const test_cmd = b.addRunArtifact(test_exe);
-    // Basically describes a `Step`
-    const test_step = b.step("test", "Run tests");
-    // Basically adds that description to the previous `Step` command
-    test_step.dependOn(&test_cmd.step);
+    run_unit_tests.has_side_effects = true;
+
+    test_step.dependOn(&run_unit_tests.step);
 }
