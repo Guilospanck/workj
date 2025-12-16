@@ -106,6 +106,6 @@ zig test src/tests.zig
 
 - [x] Convert shell to zig
 - [x] Add a workj config file
+- [x] Validate the outputs to stdout/stderr
+- [x] Validate allocator to use
 - [~] Add tests
-- [ ] Validate the outputs to stdout/stderr
-- [ ] Validate allocator to use

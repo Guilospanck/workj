@@ -73,7 +73,7 @@ pub fn init(allocator: std.mem.Allocator) !void {
             }
         }
     } else |err| {
-        logger.debug("Error {any} opening file at {s}. Will use default configs.", .{ err, config_path });
+        logger.debug("Error \"{any}\" opening file at \"{s}\". Will use default configs.", .{ err, config_path });
     }
 
     global = Self{ .layout = try utils.clone(allocator, layout), .main_branch = try utils.clone(allocator, main_branch), .cwd = try utils.clone(allocator, cwd) };

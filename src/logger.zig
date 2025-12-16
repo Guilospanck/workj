@@ -1,28 +1,28 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-const log_scope = std.log.scoped(.workj);
+const log = std.log;
 
 pub fn err(comptime format: []const u8, args: anytype) void {
     if (!builtin.is_test) {
-        log_scope.err(format, args);
+        log.err(format, args);
     }
 }
 
 pub fn warn(comptime format: []const u8, args: anytype) void {
     if (!builtin.is_test) {
-        log_scope.warn(format, args);
+        log.warn(format, args);
     }
 }
 
 pub fn info(comptime format: []const u8, args: anytype) void {
     if (!builtin.is_test) {
-        log_scope.info(format, args);
+        log.info(format, args);
     }
 }
 
 pub fn debug(comptime format: []const u8, args: anytype) void {
     if (!builtin.is_test) {
-        log_scope.debug(format, args);
+        log.debug(format, args);
     }
 }

@@ -14,7 +14,7 @@ pub fn run() !void {
     defer {
         const deinit_result = debug_alloc.deinit();
         if (deinit_result != .ok) {
-            logger.err("DebugAllocator deinit reported error: {any}\n", .{deinit_result});
+            logger.debug("DebugAllocator deinit reported error: {any}\n", .{deinit_result});
         }
     }
 
@@ -38,8 +38,14 @@ pub fn run() !void {
     // Remove program name
     _ = args.next();
 
-    const cmd = try expectArg(&args, "<command>");
-    const branch = try expectArg(&args, "<branch_name>");
+    const cmd = expectArg(&args, "<command>") catch {
+        logger.info("{s}", .{constants.USAGE});
+        return;
+    };
+    const branch = expectArg(&args, "<branch_name>") catch {
+        logger.info("{s}", .{constants.USAGE});
+        return;
+    };
 
     const response = try commands.runCommand(allocator, branch, cmd);
     if (response == null) {
@@ -49,7 +55,7 @@ pub fn run() !void {
 
 fn expectArg(iter: *std.process.ArgIterator, message: []const u8) ArgsParseError![]const u8 {
     const arg = iter.next() orelse {
-        logger.err("Missing argument {s}.\n{s}\n", .{ message, constants.USAGE });
+        logger.debug("Missing argument {s}.\n{s}\n", .{ message, constants.USAGE });
         return ArgsParseError.MissingValue;
     };
 
