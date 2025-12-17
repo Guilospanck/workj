@@ -36,6 +36,23 @@ test "getProjectName" {
     try testing.expectEqualSlices(u8, REMOTE_ORIGIN, std.mem.trim(u8, name, "\n"));
 }
 
+test "gitBranchExists" {
+    const allocator = testing.allocator;
+
+    // Initialise app-level configs
+    try config.init(allocator);
+    defer config.deinit(allocator);
+
+    try setupGit(allocator);
+    defer teardownGit(allocator);
+
+    const exists = try git.gitBranchExists(allocator, "main");
+    try testing.expect(exists);
+
+    const notexists = try git.gitBranchExists(allocator, "this-branch-does-not-exist");
+    try testing.expect(!notexists);
+}
+
 fn runShell(allocator: std.mem.Allocator, cwd: []const u8, argv: []const []const u8) !void {
     var cp = std.process.Child.init(argv, allocator);
     cp.cwd = cwd;
