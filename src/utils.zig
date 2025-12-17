@@ -80,3 +80,9 @@ pub fn getHomeDir(allocator: std.mem.Allocator) ![]u8 {
     };
     return maybeHome;
 }
+
+pub fn endsWith(s: []const u8, with: []const u8) bool {
+    if (s.len < with.len) return false;
+
+    return std.mem.eql(u8, std.mem.trim(u8, s[s.len - with.len - 1 ..], "\n"), with);
+}

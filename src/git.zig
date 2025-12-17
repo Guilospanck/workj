@@ -37,6 +37,18 @@ pub fn gitBranchExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
     return result == .Exited and result.Exited == 0;
 }
 
+/// Gets or creates the worktree directory at `$PROJECT_ROOT_LEVEL/../${PROJECT_NAME}__worktrees/<branch>`.
+/// The caller is responsible for freeing the returned slice when it is no longer needed using `allocator.free(...)`.
+///
+/// - `allocator`: the allocator to use for memory allocation
+/// - `branch`: the branch name to get/create the worktree directory
+/// - returns: the worktree directory as `[]const u8`
+///
+/// Example:
+/// ```zig
+///     const worktree_directory = try git.getOrCreateWorktreeDirectory(allocator, branch);
+///     defer allocator.free(worktree_directory);
+/// ```
 pub fn getOrCreateWorktreeDirectory(allocator: std.mem.Allocator, branch: []const u8) ![]const u8 {
     const project_root_directory = try getProjectRootLevelDirectory(allocator);
     defer allocator.free(project_root_directory);

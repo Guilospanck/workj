@@ -2,6 +2,7 @@ const std = @import("std");
 const testing = std.testing;
 const git = @import("git.zig");
 const config = @import("config.zig");
+const utils = @import("utils.zig");
 
 const REMOTE_ORIGIN = "temp_test";
 
@@ -18,7 +19,10 @@ test "getProjectRootLevelDirectory" {
     const root = try git.getProjectRootLevelDirectory(allocator);
     defer allocator.free(root);
 
+    const ends_with_remote_origin = utils.endsWith(root, REMOTE_ORIGIN);
+
     try testing.expect(root.len > 0);
+    try testing.expect(ends_with_remote_origin);
 }
 
 test "getProjectName" {
