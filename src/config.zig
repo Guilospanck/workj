@@ -3,6 +3,9 @@ const constants = @import("constants.zig");
 const utils = @import("utils.zig");
 const logger = @import("logger.zig");
 
+/// This is used as a singleton.
+/// So the whole app can see the same.
+///
 const Self = @This();
 
 layout: []u8,

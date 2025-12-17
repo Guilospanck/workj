@@ -6,15 +6,27 @@ const utils = @import("utils.zig");
 
 const REMOTE_ORIGIN = "temp_test";
 
+const GitCtx = struct {
+    allocator: std.mem.Allocator,
+
+    fn init(allocator: std.mem.Allocator) !GitCtx {
+        // Initialise app-level configs
+        try config.init(allocator);
+        try setupGit(allocator);
+
+        return GitCtx{ .allocator = allocator };
+    }
+
+    fn deinit(self: GitCtx) void {
+        defer config.deinit(self.allocator);
+        teardownGit(self.allocator);
+    }
+};
+
 test "getProjectRootLevelDirectory" {
     const allocator = testing.allocator;
-
-    // Initialise app-level configs
-    try config.init(allocator);
-    defer config.deinit(allocator);
-
-    try setupGit(allocator);
-    defer teardownGit(allocator);
+    const ctx = try GitCtx.init(allocator);
+    defer ctx.deinit();
 
     const root = try git.getProjectRootLevelDirectory(allocator);
     defer allocator.free(root);
@@ -27,13 +39,8 @@ test "getProjectRootLevelDirectory" {
 
 test "getProjectName" {
     const allocator = testing.allocator;
-
-    // Initialise app-level configs
-    try config.init(allocator);
-    defer config.deinit(allocator);
-
-    try setupGit(allocator);
-    defer teardownGit(allocator);
+    const ctx = try GitCtx.init(allocator);
+    defer ctx.deinit();
 
     const name = try git.getProjectName(allocator);
     defer allocator.free(name);
@@ -42,13 +49,8 @@ test "getProjectName" {
 
 test "gitBranchExists" {
     const allocator = testing.allocator;
-
-    // Initialise app-level configs
-    try config.init(allocator);
-    defer config.deinit(allocator);
-
-    try setupGit(allocator);
-    defer teardownGit(allocator);
+    const ctx = try GitCtx.init(allocator);
+    defer ctx.deinit();
 
     const exists = try git.gitBranchExists(allocator, "main");
     try testing.expect(exists);
