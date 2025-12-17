@@ -8,9 +8,9 @@ const logger = @import("logger.zig");
 ///
 const Self = @This();
 
-layout: []u8,
-main_branch: []u8,
-cwd: []u8,
+layout: []const u8,
+main_branch: []const u8,
+cwd: []const u8,
 
 var global: Self = undefined;
 var initialised = false;
@@ -102,9 +102,13 @@ pub fn get() *const Self {
     return &global;
 }
 
-pub fn setCwd(allocator: std.mem.Allocator, cwd: []const u8) !void {
+pub fn setConfig(allocator: std.mem.Allocator, values: Self) !void {
     if (!initialised) @panic("Config not initialised.");
 
     allocator.free(global.cwd);
-    global.cwd = try utils.clone(allocator, cwd);
+    allocator.free(global.main_branch);
+    allocator.free(global.layout);
+    global.cwd = try utils.clone(allocator, values.cwd);
+    global.main_branch = try utils.clone(allocator, values.main_branch);
+    global.layout = try utils.clone(allocator, values.layout);
 }

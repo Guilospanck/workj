@@ -14,6 +14,8 @@ pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branc
     }
 
     var cp = std.process.Child.init(argv, allocator);
+    const cwd = config.get().cwd;
+    cp.cwd = cwd;
 
     _ = try cp.spawnAndWait();
 }
@@ -22,12 +24,17 @@ pub fn gitWorktreeRemove(allocator: std.mem.Allocator, branch: []const u8) !void
     const argv = [_][]const u8{ "git", "worktree", "remove", branch };
 
     var cp = std.process.Child.init(&argv, allocator);
+    const cwd = config.get().cwd;
+    cp.cwd = cwd;
+
     _ = try cp.spawnAndWait();
 }
 
 pub fn gitBranchExists(allocator: std.mem.Allocator, branch: []const u8) !bool {
     const argv = [_][]const u8{ "git", "rev-parse", "--verify", branch };
     var cp = std.process.Child.init(&argv, allocator);
+    const cwd = config.get().cwd;
+    cp.cwd = cwd;
 
     cp.stdout_behavior = .Ignore;
     cp.stderr_behavior = .Ignore;
@@ -61,6 +68,8 @@ pub fn getOrCreateWorktreeDirectory(allocator: std.mem.Allocator, branch: []cons
     const argv = [_][]const u8{ "mkdir", "-p", worktree_directory };
 
     var cp = std.process.Child.init(&argv, allocator);
+    const cwd = config.get().cwd;
+    cp.cwd = cwd;
 
     _ = try cp.spawnAndWait();
 
@@ -98,6 +107,8 @@ pub fn gitWorktreeExists(allocator: std.mem.Allocator, branch: []const u8) !bool
     const argv = [_][]const u8{ "sh", "-c", arg_with_grep };
 
     var cp = std.process.Child.init(&argv, allocator);
+    const cwd = config.get().cwd;
+    cp.cwd = cwd;
 
     cp.stdout_behavior = .Ignore;
     cp.stderr_behavior = .Ignore;
