@@ -26,13 +26,13 @@ pub fn init(allocator: std.mem.Allocator) !void {
     defer allocator.free(config_path);
 
     logger.debug("Checking config file at {s}", .{config_path});
-    const fileExists = std.fs.openFileAbsolute(config_path, .{ .mode = .read_only });
+    const config_file_exists_at_home_dir = std.fs.openFileAbsolute(config_path, .{ .mode = .read_only });
 
-    // layout
+    // default layout
     var layout = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ abs_path, constants.DEFAULT_LAYOUT_CONFIG });
     defer allocator.free(layout);
 
-    // main branch
+    // default main branch
     var main_branch = try std.fmt.allocPrint(allocator, "{s}", .{constants.DEFAULT_MAIN_BRANCH});
     defer allocator.free(main_branch);
 
@@ -46,7 +46,7 @@ pub fn init(allocator: std.mem.Allocator) !void {
     };
     defer allocator.free(cwd);
 
-    if (fileExists) |file| {
+    if (config_file_exists_at_home_dir) |file| {
         logger.debug("Config at {s} exists. Reading it into list.", .{config_path});
         defer file.close();
 
