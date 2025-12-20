@@ -23,14 +23,17 @@ pub fn isInGitRepo(allocator: std.mem.Allocator) !bool {
     return result == .Exited and result.Exited == 0;
 }
 
-pub fn isZellijInstalled(allocator: std.mem.Allocator) !bool {
-    const argv = [_][]const u8{ "command", "-v", "zellij" };
+pub fn isZellijInstalled(allocator: std.mem.Allocator) bool {
+    const argv = [_][]const u8{ "sh", "-c", "command -v zellij" };
 
     var cp = std.process.Child.init(&argv, allocator);
     cp.stdout_behavior = .Ignore;
     cp.stderr_behavior = .Ignore;
 
-    const result = try cp.spawnAndWait();
+    const result = cp.spawnAndWait() catch |err| {
+        logger.debug("[ERROR] Could not check for zellij: {any}", .{err});
+        return false;
+    };
 
     return result == .Exited and result.Exited == 0;
 }

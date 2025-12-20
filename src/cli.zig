@@ -23,7 +23,7 @@ pub fn run() !void {
         return;
     }
 
-    if (!try utils.isZellijInstalled(allocator)) {
+    if (!utils.isZellijInstalled(allocator)) {
         logger.err("Zellij is not installed.\n", .{});
         return;
     }
