@@ -65,7 +65,7 @@ pub fn closeTab(allocator: std.mem.Allocator, branch: []const u8) !void {
     defer allocator.free(result.stderr);
 }
 
-fn queryAllTabNames(allocator: std.mem.Allocator) !std.StringHashMap(void) {
+pub fn queryAllTabNames(allocator: std.mem.Allocator) !std.StringHashMap(void) {
     var map = std.StringHashMap(void).init(allocator);
 
     const result = try std.process.Child.run(.{

@@ -6,15 +6,19 @@ run cmd branch:
 tests:
   zig build test
 
-# Run a specific test
+# Run a specific test in a specific file
 #
 # Example:
-# `just test git gitWorktreeAdd`
+# `just test-t git gitWorktreeAdd`
 # will be transformed into:
 # `zig test --test-filter "gitWorktreeAdd" src/git_test.zig`
 #
-test file test_name:
+test-t file test_name:
   zig test --test-filter "{{test_name}}" src/{{file}}_test.zig
+
+# Run a specific file
+test file:
+  zig test src/{{file}}_test.zig
 
 # Build the app
 build:

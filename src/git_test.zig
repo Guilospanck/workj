@@ -10,7 +10,9 @@ const MAIN_BRANCH = "temp-main";
 const GitCtx = struct {
     allocator: std.mem.Allocator,
 
-    fn init(allocator: std.mem.Allocator) !GitCtx {
+    fn init(allocator: std.mem.Allocator, test_name: []const u8) !GitCtx {
+        std.debug.print("\n>> Testing \"{s}\"\n", .{test_name});
+
         // Initialise app-level configs
         try config.init(allocator);
         try setupGit(allocator);
@@ -24,9 +26,13 @@ const GitCtx = struct {
     }
 };
 
+test {
+    std.debug.print("\n====== Testing git_test.zig ======\n", .{});
+}
+
 test "gitWorktree" {
     const allocator = testing.allocator;
-    const ctx = try GitCtx.init(allocator);
+    const ctx = try GitCtx.init(allocator, "gitWorktree");
     defer ctx.deinit();
 
     // Branch exists
@@ -93,7 +99,7 @@ test "gitWorktree" {
 
 test "getProjectRootLevelDirectory" {
     const allocator = testing.allocator;
-    const ctx = try GitCtx.init(allocator);
+    const ctx = try GitCtx.init(allocator, "getProjectRootLevelDirectory");
     defer ctx.deinit();
 
     const root = try git.getProjectRootLevelDirectory(allocator);
@@ -107,7 +113,7 @@ test "getProjectRootLevelDirectory" {
 
 test "getProjectName" {
     const allocator = testing.allocator;
-    const ctx = try GitCtx.init(allocator);
+    const ctx = try GitCtx.init(allocator, "getProjectName");
     defer ctx.deinit();
 
     const name = try git.getProjectName(allocator);
@@ -117,7 +123,7 @@ test "getProjectName" {
 
 test "gitBranchExists" {
     const allocator = testing.allocator;
-    const ctx = try GitCtx.init(allocator);
+    const ctx = try GitCtx.init(allocator, "gitBranchExists");
     defer ctx.deinit();
 
     const exists = try git.gitBranchExists(allocator, MAIN_BRANCH);
