@@ -1,8 +1,9 @@
 const std = @import("std");
 const testing = std.testing;
-const zellij = @import("zellij.zig");
-const git = @import("git.zig");
-const config = @import("config.zig");
+const zellij = @import("../zellij.zig");
+const git = @import("../git.zig");
+const config = @import("../config.zig");
+const test_utils = @import("test_utils.zig");
 
 const BRANCH = "potato";
 
@@ -50,7 +51,7 @@ test "tabs" {
     const directory = try git.getOrCreateWorktreeDirectory(allocator, BRANCH);
     defer allocator.free(directory);
     // Remove the created worktree directory
-    defer removeDir(allocator, directory) catch {
+    defer test_utils.removeDir(allocator, directory) catch {
         std.debug.print("Could not remove dir {s}", .{directory});
     };
 
@@ -75,9 +76,4 @@ test "tabs" {
     defer tabs_after_closing.deinit(allocator);
 
     try testing.expect(!tabs_after_closing.all_tab_names.contains(BRANCH));
-}
-
-fn removeDir(allocator: std.mem.Allocator, dir: []const u8) !void {
-    var cp = std.process.Child.init(&.{ "rm", "-rf", dir }, allocator);
-    _ = try cp.spawnAndWait();
 }

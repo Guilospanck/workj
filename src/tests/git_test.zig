@@ -1,8 +1,8 @@
 const std = @import("std");
 const testing = std.testing;
-const git = @import("git.zig");
-const config = @import("config.zig");
-const utils = @import("utils.zig");
+const git = @import("../git.zig");
+const config = @import("../config.zig");
+const utils = @import("../utils.zig");
 
 const REMOTE_ORIGIN = "temp_test";
 const MAIN_BRANCH = "temp-main";

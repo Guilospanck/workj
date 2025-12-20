@@ -11,14 +11,14 @@ tests:
 # Example:
 # `just test-t git gitWorktreeAdd`
 # will be transformed into:
-# `zig test --test-filter "gitWorktreeAdd" src/git_test.zig`
+# `zig test --test-filter "gitWorktreeAdd" src/tests/git_test.zig`
 #
 test-t file test_name:
-  zig test --test-filter "{{test_name}}" src/{{file}}_test.zig
+  zig test --test-filter "{{test_name}}" src/tests/{{file}}_test.zig
 
 # Run a specific file
 test file:
-  zig test src/{{file}}_test.zig
+  zig test src/tests/{{file}}_test.zig
 
 # Build the app
 build:

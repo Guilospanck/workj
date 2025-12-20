@@ -41,7 +41,7 @@ pub fn build(b: *std.Build) void {
     const run_unit_tests = b.addSystemCommand(&.{
         b.graph.zig_exe,
         "test",
-        "src/tests.zig",
+        "src/test_runner.zig",
     });
     run_unit_tests.has_side_effects = true;
 

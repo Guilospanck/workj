@@ -119,7 +119,7 @@ zig test src/tests.zig
 ```
 
 >[!NOTE]
->Each `*_test.zig` file you create, you MUST import it in `src/tests.zig` in order for the `zig build test` command to find it.
+>Each `*_test.zig` file you create, you MUST import it in `src/tests/index.zig` in order for the `zig build test` command to find it.
 
 ### TODOs
 
