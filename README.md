@@ -127,4 +127,5 @@ zig test src/tests.zig
 - [x] Add a workj config file
 - [x] Validate the outputs to stdout/stderr
 - [x] Validate allocator to use
+- [ ] Allow user to define a specific `.workj/config.cfg` at the repo level, so it can be customised per repository.
 - [~] Add tests
