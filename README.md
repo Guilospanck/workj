@@ -129,3 +129,5 @@ zig test src/tests.zig
 - [x] Validate allocator to use
 - [ ] Allow user to define a specific `.workj/config.cfg` at the repo level, so it can be customised per repository.
 - [~] Add tests
+    - [ ] validate if Zellij has a "sandbox" mode for tests
+    - [ ] for that matter, maybe git also has
