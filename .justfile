@@ -1,6 +1,13 @@
 # Run the built executable
-run cmd branch:
-  zig build run -- {{cmd}} {{branch}}
+# Examples:
+# just run add potato
+# just run remove larry ./test/config.cfg
+run cmd branch config="none":
+  if [ "{{config}}" = "none" ]; then \
+    zig build run -- {{cmd}} {{branch}}; \
+  else \
+    zig build run -- -c {{config}} {{cmd}} {{branch}}; \
+  fi
 
 # Run all tests
 tests:

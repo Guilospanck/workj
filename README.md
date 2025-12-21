@@ -14,7 +14,7 @@ Git worktrees in Zellij.
                                       |  $$$$$$/
                                        \______/
 
-    🎯  workj — Git Worktree & Zellij Helper
+      workj — Git Worktree & Zellij Helper
 
 ```
 
@@ -127,7 +127,8 @@ zig test src/tests.zig
 - [x] Add a workj config file
 - [x] Validate the outputs to stdout/stderr
 - [x] Validate allocator to use
-- [ ] Allow user to define a specific `.workj/config.cfg` at the repo level, so it can be customised per repository.
+- [x] Allow user to define a specific `.workj/config.cfg` at the repo level, so it can be customised per repository.
+- [ ] Check why `opencode` doesn't open in zellij if put as the command in layout.kdl
 - [~] Add tests
     - [ ] validate if Zellij has a "sandbox" mode for tests
     - [ ] for that matter, maybe git also has

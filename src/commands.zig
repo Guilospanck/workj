@@ -4,11 +4,11 @@ const utils = @import("utils.zig");
 const logger = @import("logger.zig");
 const zellij = @import("zellij.zig");
 
-const Command = enum {
+pub const Command = enum {
     Add,
     Remove,
 
-    fn fromString(s: []const u8) ?Command {
+    pub fn fromString(s: []const u8) ?Command {
         if (std.mem.eql(u8, s, "add")) {
             return Command.Add;
         } else if (std.mem.eql(u8, s, "remove")) {
@@ -19,14 +19,8 @@ const Command = enum {
     }
 };
 
-pub fn runCommand(allocator: std.mem.Allocator, branch: []const u8, cmd: []const u8) !?void {
-    const parsed_command = Command.fromString(cmd);
-
-    if (parsed_command == null) {
-        return null;
-    }
-
-    switch (parsed_command.?) {
+pub fn runCommand(allocator: std.mem.Allocator, branch: []const u8, cmd: Command) !?void {
+    switch (cmd) {
         Command.Add => {
             try add(allocator, branch);
         },

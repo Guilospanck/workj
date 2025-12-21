@@ -15,18 +15,20 @@ cwd: []const u8,
 var global: Self = undefined;
 var initialised = false;
 
-pub fn init(allocator: std.mem.Allocator) !void {
+pub fn init(allocator: std.mem.Allocator, custom_config_file_path: ?[]const u8) !void {
     const abs_path = try utils.getAbsPath(allocator);
     defer allocator.free(abs_path);
 
     const home_dir = try utils.getHomeDir(allocator);
     defer allocator.free(home_dir);
 
-    const config_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ home_dir, constants.CONFIG_PATH });
-    defer allocator.free(config_path);
+    const home_dir_config_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ home_dir, constants.CONFIG_PATH });
+    defer allocator.free(home_dir_config_path);
+
+    const config_path = custom_config_file_path orelse home_dir_config_path;
 
     logger.debug("Checking config file at {s}", .{config_path});
-    const config_file_exists_at_home_dir = std.fs.openFileAbsolute(config_path, .{ .mode = .read_only });
+    const config_file_exists_at_dir = std.fs.openFileAbsolute(config_path, .{ .mode = .read_only });
 
     // default layout
     var layout = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ abs_path, constants.DEFAULT_LAYOUT_CONFIG });
@@ -46,7 +48,7 @@ pub fn init(allocator: std.mem.Allocator) !void {
     };
     defer allocator.free(cwd);
 
-    if (config_file_exists_at_home_dir) |file| {
+    if (config_file_exists_at_dir) |file| {
         logger.debug("Config at {s} exists. Reading it into list.", .{config_path});
         defer file.close();
 

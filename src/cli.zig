@@ -5,7 +5,28 @@ const utils = @import("utils.zig");
 const commands = @import("commands.zig");
 const config = @import("config.zig");
 
-const ArgsParseError = error{ MissingValue, UnknownValue, HelperRequired };
+const ArgsParseError = error{ MissingValue, UnknownValue, HelperRequired, InternalError };
+
+const CliArgs = struct {
+    branch_name: []const u8 = "",
+    cmd: commands.Command = commands.Command.Add,
+    config_path: ?[]const u8 = null,
+
+    pub fn format(
+        self: @This(),
+        writer: *std.Io.Writer,
+    ) std.Io.Writer.Error!void {
+        try writer.print("CliArgs: {{ \n branch_name = {s},\n cmd = {any},\n config_path = {any}\n}}\n", .{ self.branch_name, self.cmd, self.config_path });
+    }
+
+    pub fn deinit(self: @This(), allocator: std.mem.Allocator) void {
+        allocator.free(self.branch_name);
+        // Only free the memory if we actually allocated it
+        if (self.config_path != null) {
+            allocator.free(self.config_path.?);
+        }
+    }
+};
 
 pub fn run() !void {
     // Allocator
@@ -28,41 +49,92 @@ pub fn run() !void {
         return;
     }
 
+    const args = parseArgs(allocator) catch return;
+    defer args.deinit(allocator);
+    logger.debug("{f}\n", .{args});
+
     // Initialise app-level configs
-    try config.init(allocator);
+    try config.init(allocator, args.config_path);
     defer config.deinit(allocator);
 
-    var args = try std.process.argsWithAllocator(allocator);
-    defer args.deinit();
-
-    // Remove program name
-    _ = args.next();
-
-    const cmd = expectArg(&args, "<command>") catch {
-        logger.info("\n{s}", .{constants.USAGE});
-        return;
-    };
-    const branch = expectArg(&args, "<branch_name>") catch {
-        logger.info("\n{s}", .{constants.USAGE});
-        return;
-    };
-
-    const response = try commands.runCommand(allocator, branch, cmd);
+    const response = try commands.runCommand(allocator, args.branch_name, args.cmd);
     if (response == null) {
         logger.info("\n{s}", .{constants.USAGE});
     }
 }
 
-fn expectArg(iter: *std.process.ArgIterator, message: []const u8) ArgsParseError![]const u8 {
-    const arg = iter.next() orelse {
-        logger.debug("Missing argument {s}.\n", .{message});
-        return ArgsParseError.MissingValue;
+fn parseArgs(allocator: std.mem.Allocator) ArgsParseError!CliArgs {
+    const argv = std.process.argsAlloc(allocator) catch |err| {
+        logger.err("{}", .{err});
+        return ArgsParseError.InternalError;
     };
+    defer std.process.argsFree(allocator, argv);
 
-    if (std.mem.eql(u8, arg, "-h") or std.mem.eql(u8, arg, "--help")) {
-        // Not really an error, but works for our purposes of showing the usage.
-        return ArgsParseError.HelperRequired;
+    var args = CliArgs{};
+    // We need this here because when it errors, the caller will not run
+    // the deinit on defer, therefore allocations made here would leak.
+    errdefer args.deinit(allocator);
+
+    var pos_int: usize = 1;
+
+    // parse optional args
+    while (pos_int < argv.len and argv[pos_int][0] == '-') {
+        if (std.mem.eql(u8, argv[pos_int], "-h") or std.mem.eql(u8, argv[pos_int], "--help")) {
+            displayUsage();
+            return ArgsParseError.HelperRequired;
+        } else if (std.mem.eql(u8, argv[pos_int], "-c") or std.mem.eql(u8, argv[pos_int], "--config-file")) {
+            if (pos_int + 1 >= argv.len) {
+                return ArgsParseError.MissingValue;
+            }
+
+            pos_int += 1;
+            args.config_path = utils.clone(allocator, argv[pos_int]) catch |err| {
+                logger.err("{}", .{err});
+                return ArgsParseError.InternalError;
+            };
+
+            pos_int += 1;
+        } else {
+            displayUsage();
+            return ArgsParseError.UnknownValue;
+        }
     }
 
-    return arg;
+    if (pos_int >= argv.len) {
+        displayUsage();
+        return ArgsParseError.UnknownValue;
+    }
+
+    // workj add potato -c
+
+    // parse positional arguments
+    // parse command
+    const cmd = argv[pos_int];
+    pos_int += 1;
+    const parsed_command = commands.Command.fromString(cmd);
+    if (parsed_command == null or pos_int >= argv.len) {
+        displayUsage();
+        return ArgsParseError.UnknownValue;
+    }
+
+    args.cmd = parsed_command.?;
+
+    // parse branch name
+    args.branch_name = utils.clone(allocator, argv[pos_int]) catch |err| {
+        logger.err("{}", .{err});
+        return ArgsParseError.InternalError;
+    };
+
+    // At this point we shouldn't have any more arguments as we first
+    // parse the optional ones and then the positional ones.
+    if (pos_int + 1 < argv.len) {
+        displayUsage();
+        return ArgsParseError.UnknownValue;
+    }
+
+    return args;
+}
+
+fn displayUsage() void {
+    logger.info("\n{s}", .{constants.USAGE});
 }
