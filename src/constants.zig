@@ -1,41 +1,55 @@
 pub const USAGE: []const u8 =
-    \\                                    /$$          
-    \\                                   | $$          
-    \\  /$$  /$$  /$$  /$$$$$$   /$$$$$$ | $$   /$$ /$$
-    \\ | $$ | $$ | $$ /$$__  $$ /$$__  $$| $$  /$$/|__/
-    \\ | $$ | $$ | $$| $$  \ $$| $$  \__/| $$$$$$/  /$$
-    \\ | $$ | $$ | $$| $$  | $$| $$      | $$_  $$ | $$
-    \\ |  $$$$$/$$$$/|  $$$$$$/| $$      | $$ \  $$| $$
-    \\  \_____/\___/  \______/ |__/      |__/  \__/| $$
-    \\                                        /$$  | $$
-    \\                                       |  $$$$$$/
-    \\                                        \______/
+    \\                                    __                
+    \\                                   |  \               
+    \\  __   __   __   ______    ______  | $$   __       __ 
+    \\ |  \ |  \ |  \ /      \  /      \ | $$  /  \     |  \
+    \\ | $$ | $$ | $$|  $$$$$$\|  $$$$$$\| $$_/  $$      \$$
+    \\ | $$ | $$ | $$| $$  | $$| $$   \$$| $$   $$      |  \
+    \\ | $$_/ $$_/ $$| $$__/ $$| $$      | $$$$$$\      | $$
+    \\  \$$   $$   $$ \$$    $$| $$      | $$  \$$\     | $$
+    \\   \$$$$$\$$$$   \$$$$$$  \$$       \$$   \$$__   | $$
+    \\                                            |  \__/ $$
+    \\                                             \$$    $$
+    \\                                              \$$$$$$ 
     \\
-    \\  🎯  workj — Git Worktree & Zellij Helper
+    \\     workj — Git Worktree & Zellij Helper
     \\
     \\ Work with Zellij tabs backed by Git worktrees
     \\ Seamlessly add and remove workspaces with a single command.
     \\
     \\ USAGE:
-    \\     workj <COMMAND> [OPTIONS]
+    \\     workj [OPTIONS] COMMAND BRANCH_NAME
+    \\
+    \\ OPTIONS:
+    \\     -c, --config-file PATH_CONFIG_FILE
+    \\         Choose a specific config file to use
+    \\
+    \\         Examples:
+    \\           workj -c ./test/config.cfg add feature/foo
     \\
     \\ COMMANDS:
-    \\     add <name>          🆕  Create (or use) a Git worktree and open a Zellij tab
-    \\                         📌  Uses your project’s `layout.kdl` configuration
-    \\                         
-    \\                         Examples:
-    \\                           workj add feature/foo
-    \\                           workj add bugfix/123
+    \\     add BRANCH_NAME
+    \\         🆕  Create (or use) a Git worktree and open a Zellij tab
+    \\         📌  Uses your project’s `layout.kdl` configuration
     \\
-    \\     remove <name>       ❌  Close the Zellij tab associated with a worktree
-    \\                         🧹  Remove the Git worktree afterward
-    \\                         
-    \\                         Examples:
-    \\                           workj remove feature/foo
-    \\                           workj remove bugfix/123
+    \\         Examples:
+    \\           workj add feature/foo
+    \\           workj add bugfix/123
     \\
-    \\     -h, --help          Show this help message
+    \\     remove BRANCH_NAME
+    \\         ❌  Close the Zellij tab associated with a worktree
+    \\         🧹  Remove the Git worktree afterward
     \\
+    \\         Examples:
+    \\           workj remove feature/foo
+    \\           workj remove bugfix/123
+    \\
+    \\     -h, --help
+    \\         Show this help message
+    \\
+    \\         Examples:
+    \\           workj -h
+    \\           workj --help
     \\
     \\ FEATURES:
     \\     ✓ Automatically create worktrees
@@ -51,11 +65,10 @@ pub const USAGE: []const u8 =
     \\     workj remove feature/new-awesome
     \\
     \\ TIPS:
-    \\       to know how to layout your Zellij panes.
     \\     • Use descriptive worktree names for clarity.
-    \\     • Combine with git aliases to boost your workflow!
+    \\     • Combine with git aliases to boost your workflow.
     \\
-    \\ HAPPY CODING WITH WORKJ 🚀  
+    \\ HAPPY CODING WITH WORKJ 🚀
     \\ Source & documentation: https://github.com/Guilospanck/workj
     \\
 ;

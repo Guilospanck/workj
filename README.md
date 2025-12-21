@@ -2,23 +2,22 @@
 Git worktrees in Zellij.
 
 ```sh
-                                   /$$          
-                                  | $$          
- /$$  /$$  /$$  /$$$$$$   /$$$$$$ | $$   /$$ /$$
-| $$ | $$ | $$ /$$__  $$ /$$__  $$| $$  /$$/|__/
-| $$ | $$ | $$| $$  \ $$| $$  \__/| $$$$$$/  /$$
-| $$ | $$ | $$| $$  | $$| $$      | $$_  $$ | $$
-|  $$$$$/$$$$/|  $$$$$$/| $$      | $$ \  $$| $$
- \_____/\___/  \______/ |__/      |__/  \__/| $$
-                                       /$$  | $$
-                                      |  $$$$$$/
-                                       \______/
-
-    🎯  workj — Git Worktree & Zellij Helper
+                                        __                
+                                       |  \               
+      __   __   __   ______    ______  | $$   __       __ 
+     |  \ |  \ |  \ /      \  /      \ | $$  /  \     |  \
+     | $$ | $$ | $$|  $$$$$$\|  $$$$$$\| $$_/  $$      \$$
+     | $$ | $$ | $$| $$  | $$| $$   \$$| $$   $$      |  \
+     | $$_/ $$_/ $$| $$__/ $$| $$      | $$$$$$\      | $$
+      \$$   $$   $$ \$$    $$| $$      | $$  \$$\     | $$
+       \$$$$$\$$$$   \$$$$$$  \$$       \$$   \$$__   | $$
+                                                |  \__/ $$
+                                                 \$$    $$
+                                                  \$$$$$$ 
+    
+         workj — Git Worktree & Zellij Helper
 
 ```
-
-![workj help](image.png)
 
 ## Intro
 
@@ -46,25 +45,10 @@ Before using it, check if the default configs (`/configs/*`) make sense for you.
 
 ## Usage
 
-```sh
-workj <command> <branch_name>
-```
+Run `workj -h` for available commands and docs.
 
-Available commands: add, remove.
-
-Example: create a new [Git worktree](https://git-scm.com/docs/git-worktree) on a branch named `potato`:
-
-```sh
-workj add potato
-```
-
-This will create a new worktree at `$PROJECT_ROOT_LEVEL/../${PROJECT_NAME}__worktrees/potato` and open a new Zellij tab at that directory with panes based on the `layout.kdl` file.
-
-To remove it:
-
-```sh
-workj remove potato
-```
+>[!NOTE]
+>When you run the `add` command, it creates a new worktree at `$PROJECT_ROOT_LEVEL/../${PROJECT_NAME}__worktrees/${BRANCH_NAME}` and open a new Zellij tab at that directory with panes based on the `layout.kdl` file.
 
 ## Development
 
@@ -127,7 +111,8 @@ zig test src/tests.zig
 - [x] Add a workj config file
 - [x] Validate the outputs to stdout/stderr
 - [x] Validate allocator to use
-- [ ] Allow user to define a specific `.workj/config.cfg` at the repo level, so it can be customised per repository.
+- [x] Allow user to define a specific `.workj/config.cfg` at the repo level, so it can be customised per repository.
+- [ ] Check why `opencode` doesn't open in zellij if put as the command in layout.kdl
 - [~] Add tests
     - [ ] validate if Zellij has a "sandbox" mode for tests
     - [ ] for that matter, maybe git also has
