@@ -35,13 +35,13 @@ After that, you can run it following [Usage](#usage) section.
 
 ## Configuration
 
-Before using it, check if the default configs (`/configs/*`) make sense for you. If they don't, you can create a `~/.workj/config.cfg` file. The valid keys are displayed in `/configs/workj_config.cfg`.
+Before using it, check if the default configs (`/configs/*`) make sense for you. If they don't, you can create a `~/.workj/config.cfg` file or pass in via the CLI with the `-c` (or `--config-file`) option (check the `workj -h` to see options and how to use). The valid keys are displayed in `/configs/workj_config.cfg`.
 
 - `main_branch` is the start point for the new branch (if it doesn't exist);
 - `layout` is the path to the [Zellij layout](https://zellij.dev/documentation/creating-a-layout.html) you want to use when starting a new `workj add <branch>` command.
 
 >[!NOTE]
->If the config file doesn't exist at `~/.workj/config.cfg`, the default values (the ones inside `/configs/*`) will be used.
+>If you don't pass a config via the `-c`/`--config-file` option, it will check for it at the global level `~/.workj/config.cfg`. If the config file doesn't exist there, the default values (the ones inside `/configs/*`) will be used.
 
 ## Usage
 

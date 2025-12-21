@@ -105,8 +105,6 @@ fn parseArgs(allocator: std.mem.Allocator) ArgsParseError!CliArgs {
         return ArgsParseError.UnknownValue;
     }
 
-    // workj add potato -c
-
     // parse positional arguments
     // parse command
     const cmd = argv[pos_int];
