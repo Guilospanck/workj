@@ -19,18 +19,18 @@ pub const Command = enum {
     }
 };
 
-pub fn runCommand(allocator: std.mem.Allocator, branch: []const u8, cmd: Command) !?void {
+pub fn runCommand(allocator: std.mem.Allocator, branch: []const u8, cmd: Command, other_args: ?[]const []const u8) !?void {
     switch (cmd) {
         Command.Add => {
-            try add(allocator, branch);
+            try add(allocator, branch, other_args);
         },
         Command.Remove => {
-            try remove(allocator, branch);
+            try remove(allocator, branch, other_args);
         },
     }
 }
 
-fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
+fn add(allocator: std.mem.Allocator, branch: []const u8, other_args: ?[]const []const u8) !void {
     const worktree_directory = try git.getOrCreateWorktreeDirectory(allocator, branch);
     defer allocator.free(worktree_directory);
 
@@ -51,10 +51,10 @@ fn add(allocator: std.mem.Allocator, branch: []const u8) !void {
 
     const branch_exists = try git.gitBranchExists(allocator, branch);
 
-    try git.gitWorktreeAdd(allocator, worktree_directory, branch, branch_exists);
+    try git.gitWorktreeAdd(allocator, worktree_directory, branch, branch_exists, other_args);
 }
 
-fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
+fn remove(allocator: std.mem.Allocator, branch: []const u8, other_args: ?[]const []const u8) !void {
     try zellij.closeTab(allocator, branch);
 
     const worktree_exists = try git.gitWorktreeExists(allocator, branch);
@@ -63,5 +63,5 @@ fn remove(allocator: std.mem.Allocator, branch: []const u8) !void {
         return;
     }
 
-    try git.gitWorktreeRemove(allocator, branch);
+    try git.gitWorktreeRemove(allocator, branch, other_args);
 }
