@@ -16,8 +16,8 @@ pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branc
         try argv.appendSlice(allocator, &.{ "-b", branch, config.get().main_branch });
     }
 
-    if (other_args != null) {
-        try argv.appendSlice(allocator, other_args.?);
+    if (other_args) |args| {
+        try argv.appendSlice(allocator, args);
     }
 
     try argv.append(allocator, "-q");
@@ -35,8 +35,8 @@ pub fn gitWorktreeRemove(allocator: std.mem.Allocator, branch: []const u8, other
 
     try argv.appendSlice(allocator, &.{ "git", "worktree", "remove", branch });
 
-    if (other_args != null) {
-        try argv.appendSlice(allocator, other_args.?);
+    if (other_args) |args| {
+        try argv.appendSlice(allocator, args);
     }
 
     var cp = std.process.Child.init(argv.items, allocator);

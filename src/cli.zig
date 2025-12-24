@@ -130,6 +130,7 @@ fn parseArgs(allocator: std.mem.Allocator) ArgsParseError!CliArgs {
 
     // No other args to pass to the underlying command
     if (pos_int == argv.len) {
+        logger.debug("No more args", .{});
         return args;
     }
 
@@ -139,6 +140,8 @@ fn parseArgs(allocator: std.mem.Allocator) ArgsParseError!CliArgs {
         logger.err("{}", .{err});
         return ArgsParseError.InternalError;
     };
+
+    logger.debug("Found args: {any}", .{args.other_args});
 
     return args;
 }
