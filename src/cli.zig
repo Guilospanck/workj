@@ -17,7 +17,13 @@ const CliArgs = struct {
         self: @This(),
         writer: *std.Io.Writer,
     ) std.Io.Writer.Error!void {
-        try writer.print("CliArgs: {{ \n branch_name = {s},\n cmd = {any},\n config_path = {any}\n,\n other_args = {any}\n}}\n", .{ self.branch_name, self.cmd, self.config_path, self.other_args });
+        try writer.print("CliArgs: {{ \n branch_name = {s},\n cmd = {any},\n config_path = {any},\n", .{ self.branch_name, self.cmd, self.config_path });
+        if (self.other_args) |other_args| {
+            for (other_args) |arg| {
+                try writer.print("other_args = \"{s}\",\n", .{arg});
+            }
+        }
+        try writer.print("}}\n", .{});
     }
 
     pub fn deinit(self: @This(), allocator: std.mem.Allocator) void {
@@ -26,8 +32,11 @@ const CliArgs = struct {
         if (self.config_path != null) {
             allocator.free(self.config_path.?);
         }
-        if (self.other_args != null) {
-            allocator.free(self.other_args.?);
+        if (self.other_args) |other_args| {
+            for (other_args) |arg| {
+                allocator.free(arg);
+            }
+            allocator.free(other_args);
         }
     }
 };
@@ -130,19 +139,26 @@ fn parseArgs(allocator: std.mem.Allocator) ArgsParseError!CliArgs {
 
     // No other args to pass to the underlying command
     if (pos_int == argv.len) {
-        logger.debug("No more args", .{});
+        logger.debug("No additional args", .{});
         return args;
     }
 
     // get args that we would pass to the underlying command
     const other_args_slice = argv[pos_int..];
-    args.other_args = std.mem.Allocator.dupe(allocator, []const u8, other_args_slice) catch |err| {
-        logger.err("{}", .{err});
+    var buffer = std.mem.Allocator.alloc(allocator, []const u8, other_args_slice.len) catch |err| {
+        logger.err("Couldn't allocate memory for \"other_args\" buffer: {}", .{err});
         return ArgsParseError.InternalError;
     };
+    errdefer allocator.free(buffer);
 
-    logger.debug("Found args: {any}", .{args.other_args});
+    for (other_args_slice, 0..) |arg, i| {
+        buffer[i] = std.mem.Allocator.dupe(allocator, u8, arg) catch |err| {
+            logger.err("Couldn't duplicate memory for arg \"{s}\" arg: {}", .{ arg, err });
+            return ArgsParseError.InternalError;
+        };
+    }
 
+    args.other_args = buffer;
     return args;
 }
 
