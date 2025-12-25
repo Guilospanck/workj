@@ -49,7 +49,7 @@ test "gitWorktree" {
         const worktree_does_not_exist = try git.gitWorktreeExists(allocator, branch);
         try testing.expect(!worktree_does_not_exist);
 
-        try git.gitWorktreeAdd(allocator, directory, branch, branch_exists);
+        try git.gitWorktreeAdd(allocator, directory, branch, branch_exists, null);
 
         const worktree_exists = try git.gitWorktreeExists(allocator, branch);
         try testing.expect(worktree_exists);
@@ -58,7 +58,7 @@ test "gitWorktree" {
         try testing.expect(branch_exists_result);
 
         // cleanup
-        try git.gitWorktreeRemove(allocator, branch);
+        try git.gitWorktreeRemove(allocator, branch, null);
         try test_utils.removeBranch(allocator, branch);
 
         const worktree_exists_after_delete = try git.gitWorktreeExists(allocator, branch);
@@ -78,7 +78,7 @@ test "gitWorktree" {
         const worktree_does_not_exist = try git.gitWorktreeExists(allocator, branch);
         try testing.expect(!worktree_does_not_exist);
 
-        try git.gitWorktreeAdd(allocator, directory, branch, branch_exists);
+        try git.gitWorktreeAdd(allocator, directory, branch, branch_exists, null);
 
         const worktree_exists = try git.gitWorktreeExists(allocator, branch);
         try testing.expect(worktree_exists);
@@ -87,7 +87,7 @@ test "gitWorktree" {
         try testing.expect(branch_exists_result);
 
         // cleanup
-        try git.gitWorktreeRemove(allocator, branch);
+        try git.gitWorktreeRemove(allocator, branch, null);
         try test_utils.removeBranch(allocator, branch);
 
         const worktree_exists_after_delete = try git.gitWorktreeExists(allocator, branch);

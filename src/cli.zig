@@ -11,12 +11,19 @@ const CliArgs = struct {
     branch_name: []const u8 = "",
     cmd: commands.Command = commands.Command.Add,
     config_path: ?[]const u8 = null,
+    other_args: ?[]const []const u8 = null, // this is what we can use to pass arguments to the underlying command.
 
     pub fn format(
         self: @This(),
         writer: *std.Io.Writer,
     ) std.Io.Writer.Error!void {
-        try writer.print("CliArgs: {{ \n branch_name = {s},\n cmd = {any},\n config_path = {any}\n}}\n", .{ self.branch_name, self.cmd, self.config_path });
+        try writer.print("CliArgs: {{ \n branch_name = {s},\n cmd = {any},\n config_path = {any},\n", .{ self.branch_name, self.cmd, self.config_path });
+        if (self.other_args) |other_args| {
+            for (other_args) |arg| {
+                try writer.print("other_args = \"{s}\",\n", .{arg});
+            }
+        }
+        try writer.print("}}\n", .{});
     }
 
     pub fn deinit(self: @This(), allocator: std.mem.Allocator) void {
@@ -24,6 +31,14 @@ const CliArgs = struct {
         // Only free the memory if we actually allocated it
         if (self.config_path != null) {
             allocator.free(self.config_path.?);
+        }
+        // Array of strings, so we need to free the strings first AND then the
+        // array itself.
+        if (self.other_args) |other_args| {
+            defer allocator.free(other_args);
+            for (other_args) |arg| {
+                allocator.free(arg);
+            }
         }
     }
 };
@@ -57,7 +72,7 @@ pub fn run() !void {
     try config.init(allocator, args.config_path);
     defer config.deinit(allocator);
 
-    const response = try commands.runCommand(allocator, args.branch_name, args.cmd);
+    const response = try commands.runCommand(allocator, args.branch_name, args.cmd, args.other_args);
     if (response == null) {
         logger.info("\n{s}", .{constants.USAGE});
     }
@@ -122,14 +137,30 @@ fn parseArgs(allocator: std.mem.Allocator) ArgsParseError!CliArgs {
         logger.err("{}", .{err});
         return ArgsParseError.InternalError;
     };
+    pos_int += 1;
 
-    // At this point we shouldn't have any more arguments as we first
-    // parse the optional ones and then the positional ones.
-    if (pos_int + 1 < argv.len) {
-        displayUsage();
-        return ArgsParseError.UnknownValue;
+    // No other args to pass to the underlying command
+    if (pos_int == argv.len) {
+        logger.debug("No additional args", .{});
+        return args;
     }
 
+    // get args that we would pass to the underlying command
+    const other_args_slice = argv[pos_int..];
+    var buffer = std.mem.Allocator.alloc(allocator, []const u8, other_args_slice.len) catch |err| {
+        logger.err("Couldn't allocate memory for \"other_args\" buffer: {}", .{err});
+        return ArgsParseError.InternalError;
+    };
+    errdefer allocator.free(buffer);
+
+    for (other_args_slice, 0..) |arg, i| {
+        buffer[i] = std.mem.Allocator.dupe(allocator, u8, arg) catch |err| {
+            logger.err("Couldn't duplicate memory for arg \"{s}\" arg: {}", .{ arg, err });
+            return ArgsParseError.InternalError;
+        };
+    }
+
+    args.other_args = buffer;
     return args;
 }
 

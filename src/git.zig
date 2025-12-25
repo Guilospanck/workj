@@ -4,26 +4,42 @@ const constants = @import("constants.zig");
 const logger = @import("logger.zig");
 const config = @import("config.zig");
 
-pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: []const u8, branch_exists: bool) !void {
-    var argv: []const []const u8 = undefined; // slice
+pub fn gitWorktreeAdd(allocator: std.mem.Allocator, directory: []const u8, branch: []const u8, branch_exists: bool, other_args: ?[]const []const u8) !void {
+    var argv: std.ArrayList([]const u8) = .empty;
+    defer argv.deinit(allocator);
+
+    try argv.appendSlice(allocator, &.{ "git", "worktree", "add", directory });
 
     if (branch_exists) {
-        argv = &.{ "git", "worktree", "add", directory, branch, "-q" };
+        try argv.append(allocator, branch);
     } else {
-        argv = &.{ "git", "worktree", "add", directory, "-b", branch, config.get().main_branch, "-q" };
+        try argv.appendSlice(allocator, &.{ "-b", branch, config.get().main_branch });
     }
 
-    var cp = std.process.Child.init(argv, allocator);
+    if (other_args) |args| {
+        try argv.appendSlice(allocator, args);
+    }
+
+    try argv.append(allocator, "-q");
+
+    var cp = std.process.Child.init(argv.items, allocator);
     const cwd = config.get().cwd;
     cp.cwd = cwd;
 
     _ = try cp.spawnAndWait();
 }
 
-pub fn gitWorktreeRemove(allocator: std.mem.Allocator, branch: []const u8) !void {
-    const argv = [_][]const u8{ "git", "worktree", "remove", branch };
+pub fn gitWorktreeRemove(allocator: std.mem.Allocator, branch: []const u8, other_args: ?[]const []const u8) !void {
+    var argv: std.ArrayList([]const u8) = .empty;
+    defer argv.deinit(allocator);
 
-    var cp = std.process.Child.init(&argv, allocator);
+    try argv.appendSlice(allocator, &.{ "git", "worktree", "remove", branch });
+
+    if (other_args) |args| {
+        try argv.appendSlice(allocator, args);
+    }
+
+    var cp = std.process.Child.init(argv.items, allocator);
     const cwd = config.get().cwd;
     cp.cwd = cwd;
 
