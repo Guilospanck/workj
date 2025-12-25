@@ -18,7 +18,7 @@ pub const USAGE: []const u8 =
     \\ Seamlessly add and remove workspaces with a single command.
     \\
     \\ USAGE:
-    \\     workj [OPTIONS] COMMAND BRANCH_NAME
+    \\     workj [OPTIONS] COMMAND BRANCH_NAME [FLAGS]
     \\
     \\ OPTIONS:
     \\     -c, --config-file PATH_CONFIG_FILE
@@ -50,6 +50,14 @@ pub const USAGE: []const u8 =
     \\         Examples:
     \\           workj -h
     \\           workj --help
+    \\
+    \\ FLAGS:
+    \\     Flags that will be passed to the underlying git worktree command.
+    \\     To know more, do `git worktree add --help` or `git worktree remove --help`.
+    \\
+    \\         Examples:
+    \\           workj remove feature/foo --force (here --force will allow removing
+    \\           the worktree even if it has uncommited changes).
     \\
     \\ FEATURES:
     \\     ✓ Automatically create worktrees
