@@ -1,12 +1,51 @@
 # Run the built executable
 # Examples:
 # just run add potato
-# just run remove larry ./test/config.cfg
-run cmd branch config="none":
-  if [ "{{config}}" = "none" ]; then \
-    zig build run -- {{cmd}} {{branch}}; \
-  else \
-    zig build run -- -c {{config}} {{cmd}} {{branch}}; \
+# just run remove larry -c ./test/config.cfg
+# just run add feature/32 --force --dry-run
+# just run remove potato --config-file ./config.cfg
+# just run remove potato --config-file=./config.cfg
+run cmd branch *args:
+  #!/usr/bin/env sh
+
+  set -eu
+
+  config=""
+  rest=()
+
+  # Put variadic args into positional parameters
+  set -- {{args}}
+
+  while [ "$#" -gt 0 ]; do
+    case "$1" in
+      -c)
+        shift
+        config="$1"
+        shift
+        ;;
+
+      --config-file)
+        shift
+        config="$1"
+        shift
+        ;;
+
+      --config-file=*)
+        config="${1#*=}"
+        shift
+        ;;
+
+      *)
+        rest+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  if [ -n "$config" ]; then
+    zig build run -- -c "$config" {{cmd}} {{branch}} "${rest[@]}" 
+  else
+    zig build run -- {{cmd}} {{branch}} "${rest[@]}"
   fi
 
 # Run all tests

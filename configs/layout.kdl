@@ -6,7 +6,7 @@ layout {
       pane split_direction="vertical" {
         pane size="70%" { }
 
-        pane command="kiro-cli" close_on_exit=true
+        pane command="opencode" close_on_exit=true
 	  }
 
       pane size="20%" { }

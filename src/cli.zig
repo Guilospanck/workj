@@ -32,11 +32,13 @@ const CliArgs = struct {
         if (self.config_path != null) {
             allocator.free(self.config_path.?);
         }
+        // Array of strings, so we need to free the strings first AND then the
+        // array itself.
         if (self.other_args) |other_args| {
+            defer allocator.free(other_args);
             for (other_args) |arg| {
                 allocator.free(arg);
             }
-            allocator.free(other_args);
         }
     }
 };
