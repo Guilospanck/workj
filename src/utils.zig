@@ -93,6 +93,7 @@ pub fn endsWith(s: []const u8, with: []const u8) bool {
 pub fn getAllEnvsPaths(allocator: std.mem.Allocator, cwd: []const u8) !std.ArrayList([]const u8) {
     var list: std.ArrayList([]const u8) = .empty;
 
+    // TODO: improve this list of pruned directories.
     const argv = [_][]const u8{ "sh", "-c", "find . -path \"node_modules\" -prune -o -path \".git\" -prune -o -type f -name \".env*\"" };
 
     const result = try std.process.Child.run(.{ .argv = &argv, .cwd = cwd, .allocator = allocator });
