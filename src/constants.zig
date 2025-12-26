@@ -27,6 +27,12 @@ pub const USAGE: []const u8 =
     \\         Examples:
     \\           workj -c ./test/config.cfg add feature/foo
     \\
+    \\     -nec, --no-envs-copy
+    \\         Do not copy `.env*` files when creating a new git worktree.
+    \\
+    \\         Examples:
+    \\           workj --no-env-files add feature/foo
+    \\
     \\ COMMANDS:
     \\     add BRANCH_NAME
     \\         🆕  Create (or use) a Git worktree and open a Zellij tab

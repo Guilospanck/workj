@@ -55,11 +55,6 @@ fn add(allocator: std.mem.Allocator, branch: []const u8, other_args: ?[]const []
     try git.gitWorktreeAdd(allocator, worktree_directory, branch, branch_exists, other_args);
 
     if (!config.get().no_envs_copy) {
-        // const abs_path = try utils.getAbsPath(allocator);
-        // defer allocator.free(abs_path);
-        // const env_files = try std.fmt.allocPrint(allocator, "{s}/.env*", .{abs_path});
-        // defer allocator.free(env_files);
-
         const cwd = config.get().cwd;
         var env_files = try utils.getAllEnvsPaths(allocator, cwd);
         defer {

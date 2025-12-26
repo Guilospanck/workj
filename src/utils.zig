@@ -126,27 +126,3 @@ pub fn copyFiles(allocator: std.mem.Allocator, cwd: []const u8, from: []const u8
     cp.cwd = cwd;
     _ = try cp.spawnAndWait();
 }
-
-// pub fn copyFiles(allocator: std.mem.Allocator, fromPattern: []const u8, to: []const u8) !void {
-//     const fs = std.fs;
-//     const cwd = fs.cwd();
-//
-//     // In order to walk the directry, `iterate` must be set to true.
-//     var dir = try cwd.openDir(".", .{ .iterate = true });
-//     defer dir.close();
-//
-//     var walker = try dir.walk(allocator);
-//     defer walker.deinit();
-//
-//     while (try walker.next()) |entry| {
-//         const src = entry.basename;
-//
-//         logger.info("SRC: {s}", .{src});
-//         if (std.mem.startsWith(u8, src, fromPattern)) {
-//             const dst_path = try std.fs.path.join(allocator, &[_][]const u8{ to, src });
-//             defer allocator.free(dst_path);
-//
-//             try cwd.copyFile(src, cwd, dst_path, .{});
-//         }
-//     }
-// }

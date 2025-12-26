@@ -115,7 +115,7 @@ zig test src/tests.zig
 - [x] Allow user to define a specific `.workj/config.cfg` at the repo level, so it can be customised per repository.
 - [x] Check why `opencode` doesn't open in zellij if put as the command in layout.kdl
 - [x] Allow the `--force` on remove (this needed when the user wants to remove a worktree that has some uncommited changes)
-- [ ] Copy the envs on creation
+- [x] Copy the envs on creation
 - [~] Add tests
     - [ ] validate if Zellij has a "sandbox" mode for tests
     - [ ] for that matter, maybe git also has
