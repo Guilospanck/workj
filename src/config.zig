@@ -121,4 +121,5 @@ pub fn setConfig(allocator: std.mem.Allocator, values: Self) !void {
     global.cwd = try utils.clone(allocator, values.cwd);
     global.main_branch = try utils.clone(allocator, values.main_branch);
     global.layout = try utils.clone(allocator, values.layout);
+    global.no_envs_copy = values.no_envs_copy;
 }
