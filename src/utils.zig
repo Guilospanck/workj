@@ -111,15 +111,15 @@ pub fn getAllEnvsPaths(allocator: std.mem.Allocator, cwd: []const u8) !std.Array
     return list;
 }
 
-/// Copies files from one place to another
+/// Copies files from one place to another.
 ///
 /// Example:
-/// Copy all .env files from `workj/` to `workj__worktrees/potato/` folder.
 ///
 /// ```zig
-/// try copyFiles(allocator, "/home/guilospanck/workj/.env*", "/home/guilospanck/workj__worktrees/potato/");
+/// try copyFiles(allocator, "/home/guilospanck/workj", ".env", "/home/guilospanck/workj__worktrees/potato/");
 /// ```
 ///
+/// `cp` is used internally to copy the file.
 pub fn copyFiles(allocator: std.mem.Allocator, cwd: []const u8, from: []const u8, to: []const u8) !void {
     const argv = [_][]const u8{ "cp", from, to };
     var cp = std.process.Child.init(&argv, allocator);
