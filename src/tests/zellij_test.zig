@@ -45,7 +45,7 @@ test "tabs" {
     const allocator = testing.allocator;
 
     // Initialise app-level configs
-    try config.init(allocator, null);
+    try config.init(allocator, null, null);
     defer config.deinit(allocator);
 
     const directory = try git.getOrCreateWorktreeDirectory(allocator, BRANCH);

@@ -11,13 +11,14 @@ const CliArgs = struct {
     branch_name: []const u8 = "",
     cmd: commands.Command = commands.Command.Add,
     config_path: ?[]const u8 = null,
-    other_args: ?[]const []const u8 = null, // this is what we can use to pass arguments to the underlying command.
+    no_envs_copy: ?bool = null,
+    other_args: ?[]const []const u8 = null, // this is what we can use to pass arguments to the underlying git worktree command.
 
     pub fn format(
         self: @This(),
         writer: *std.Io.Writer,
     ) std.Io.Writer.Error!void {
-        try writer.print("CliArgs: {{ \n branch_name = {s},\n cmd = {any},\n config_path = {any},\n", .{ self.branch_name, self.cmd, self.config_path });
+        try writer.print("CliArgs: {{ \n branch_name = {s},\n cmd = {any},\n config_path = {any},\n no_envs_copy = {any},\n", .{ self.branch_name, self.cmd, self.config_path, self.no_envs_copy });
         if (self.other_args) |other_args| {
             for (other_args) |arg| {
                 try writer.print("other_args = \"{s}\",\n", .{arg});
@@ -69,7 +70,7 @@ pub fn run() !void {
     logger.debug("{f}\n", .{args});
 
     // Initialise app-level configs
-    try config.init(allocator, args.config_path);
+    try config.init(allocator, args.config_path, args.no_envs_copy);
     defer config.deinit(allocator);
 
     const response = try commands.runCommand(allocator, args.branch_name, args.cmd, args.other_args);
@@ -108,6 +109,9 @@ fn parseArgs(allocator: std.mem.Allocator) ArgsParseError!CliArgs {
                 return ArgsParseError.InternalError;
             };
 
+            pos_int += 1;
+        } else if (std.mem.eql(u8, argv[pos_int], "-nec") or std.mem.eql(u8, argv[pos_int], "--no-envs-copy")) {
+            args.no_envs_copy = true;
             pos_int += 1;
         } else {
             displayUsage();

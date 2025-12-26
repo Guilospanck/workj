@@ -89,3 +89,64 @@ pub fn endsWith(s: []const u8, with: []const u8) bool {
 
     return std.mem.eql(u8, std.mem.trim(u8, s[s.len - with.len - 1 ..], "\n"), with);
 }
+
+pub fn getAllEnvsPaths(allocator: std.mem.Allocator, cwd: []const u8) !std.ArrayList([]const u8) {
+    var list: std.ArrayList([]const u8) = .empty;
+
+    const argv = [_][]const u8{ "sh", "-c", "find . -path \"node_modules\" -prune -o -path \".git\" -prune -o -type f -name \".env*\"" };
+
+    const result = try std.process.Child.run(.{ .argv = &argv, .cwd = cwd, .allocator = allocator });
+
+    defer allocator.free(result.stdout);
+    defer allocator.free(result.stderr);
+
+    var it = std.mem.splitScalar(u8, result.stdout, '\n');
+    while (it.next()) |line| {
+        if (line.len == 0) continue;
+
+        const key = try std.mem.Allocator.dupe(allocator, u8, line);
+        try list.append(allocator, key);
+    }
+
+    return list;
+}
+
+/// Copies files from one place to another
+///
+/// Example:
+/// Copy all .env files from `workj/` to `workj__worktrees/potato/` folder.
+///
+/// ```zig
+/// try copyFiles(allocator, "/home/guilospanck/workj/.env*", "/home/guilospanck/workj__worktrees/potato/");
+/// ```
+///
+pub fn copyFiles(allocator: std.mem.Allocator, cwd: []const u8, from: []const u8, to: []const u8) !void {
+    const argv = [_][]const u8{ "cp", from, to };
+    var cp = std.process.Child.init(&argv, allocator);
+    cp.cwd = cwd;
+    _ = try cp.spawnAndWait();
+}
+
+// pub fn copyFiles(allocator: std.mem.Allocator, fromPattern: []const u8, to: []const u8) !void {
+//     const fs = std.fs;
+//     const cwd = fs.cwd();
+//
+//     // In order to walk the directry, `iterate` must be set to true.
+//     var dir = try cwd.openDir(".", .{ .iterate = true });
+//     defer dir.close();
+//
+//     var walker = try dir.walk(allocator);
+//     defer walker.deinit();
+//
+//     while (try walker.next()) |entry| {
+//         const src = entry.basename;
+//
+//         logger.info("SRC: {s}", .{src});
+//         if (std.mem.startsWith(u8, src, fromPattern)) {
+//             const dst_path = try std.fs.path.join(allocator, &[_][]const u8{ to, src });
+//             defer allocator.free(dst_path);
+//
+//             try cwd.copyFile(src, cwd, dst_path, .{});
+//         }
+//     }
+// }

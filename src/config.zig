@@ -11,18 +11,19 @@ const Self = @This();
 layout: []const u8,
 main_branch: []const u8,
 cwd: []const u8,
+no_envs_copy: bool,
 
 var global: Self = undefined;
 var initialised = false;
 
-pub fn init(allocator: std.mem.Allocator, custom_config_file_path: ?[]const u8) !void {
+pub fn init(allocator: std.mem.Allocator, custom_config_file_path: ?[]const u8, cli_no_envs_copy: ?bool) !void {
     const abs_path = try utils.getAbsPath(allocator);
     defer allocator.free(abs_path);
 
     const home_dir = try utils.getHomeDir(allocator);
     defer allocator.free(home_dir);
 
-    const home_dir_config_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ home_dir, constants.CONFIG_PATH });
+    const home_dir_config_path = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ home_dir, constants.DEFAULT_CONFIG_PATH });
     defer allocator.free(home_dir_config_path);
 
     const config_path = custom_config_file_path orelse home_dir_config_path;
@@ -47,6 +48,11 @@ pub fn init(allocator: std.mem.Allocator, custom_config_file_path: ?[]const u8) 
         }
     };
     defer allocator.free(cwd);
+
+    var no_envs_copy = constants.DEFAULT_NO_ENVS_COPY;
+    if (cli_no_envs_copy) |cli_no_envs| {
+        no_envs_copy = cli_no_envs;
+    }
 
     if (config_file_exists_at_dir) |file| {
         logger.debug("Config at {s} exists. Reading it into list.", .{config_path});
@@ -75,15 +81,17 @@ pub fn init(allocator: std.mem.Allocator, custom_config_file_path: ?[]const u8) 
             } else if (std.mem.eql(u8, key, "main_branch")) {
                 allocator.free(main_branch);
                 main_branch = try utils.clone(allocator, value);
+            } else if (std.mem.eql(u8, key, "no_envs_copy") and !no_envs_copy) {
+                no_envs_copy = std.mem.eql(u8, value, "true");
             }
         }
     } else |err| {
         logger.debug("Error \"{any}\" opening file at \"{s}\". Will use default configs.", .{ err, config_path });
     }
 
-    global = Self{ .layout = try utils.clone(allocator, layout), .main_branch = try utils.clone(allocator, main_branch), .cwd = try utils.clone(allocator, cwd) };
+    global = Self{ .layout = try utils.clone(allocator, layout), .main_branch = try utils.clone(allocator, main_branch), .cwd = try utils.clone(allocator, cwd), .no_envs_copy = no_envs_copy };
 
-    logger.debug("Global configs:\nlayout: {s}\nmain branch: {s}\nCWD: {s}", .{ layout, main_branch, cwd });
+    logger.debug("Global configs:\nlayout: {s}\nmain branch: {s}\nCWD: {s}\nno_env_copy: {any}", .{ layout, main_branch, cwd, no_envs_copy });
 
     initialised = true;
 }

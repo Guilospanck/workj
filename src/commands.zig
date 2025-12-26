@@ -3,6 +3,7 @@ const git = @import("git.zig");
 const utils = @import("utils.zig");
 const logger = @import("logger.zig");
 const zellij = @import("zellij.zig");
+const config = @import("config.zig");
 
 pub const Command = enum {
     Add,
@@ -52,6 +53,30 @@ fn add(allocator: std.mem.Allocator, branch: []const u8, other_args: ?[]const []
     const branch_exists = try git.gitBranchExists(allocator, branch);
 
     try git.gitWorktreeAdd(allocator, worktree_directory, branch, branch_exists, other_args);
+
+    if (!config.get().no_envs_copy) {
+        // const abs_path = try utils.getAbsPath(allocator);
+        // defer allocator.free(abs_path);
+        // const env_files = try std.fmt.allocPrint(allocator, "{s}/.env*", .{abs_path});
+        // defer allocator.free(env_files);
+
+        const cwd = config.get().cwd;
+        var env_files = try utils.getAllEnvsPaths(allocator, cwd);
+        defer {
+            defer env_files.deinit(allocator);
+            for (env_files.items) |env| {
+                allocator.free(env);
+            }
+        }
+
+        for (env_files.items) |env_path| {
+            const to = try std.fmt.allocPrint(allocator, "{s}{s}", .{ worktree_directory, std.mem.trimStart(u8, env_path, ".") });
+            defer allocator.free(to);
+            try utils.copyFiles(allocator, cwd, env_path, to);
+        }
+
+        logger.debug(".env* files copied to worktree directory", .{});
+    }
 }
 
 fn remove(allocator: std.mem.Allocator, branch: []const u8, other_args: ?[]const []const u8) !void {
