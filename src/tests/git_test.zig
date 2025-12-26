@@ -15,7 +15,7 @@ const GitCtx = struct {
         std.debug.print("\n>> Testing \"{s}\"\n", .{test_name});
 
         // Initialise app-level configs
-        try config.init(allocator, null);
+        try config.init(allocator, null, null);
         try test_utils.setupGit(allocator, REMOTE_ORIGIN, MAIN_BRANCH);
 
         return GitCtx{ .allocator = allocator };

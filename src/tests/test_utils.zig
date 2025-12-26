@@ -39,6 +39,7 @@ pub fn setupGit(allocator: std.mem.Allocator, remote_origin: []const u8, main_br
         .layout = layout,
         .main_branch = main_branch,
         .cwd = cwd,
+        .no_envs_copy = false,
     });
 
     // init

@@ -35,10 +35,11 @@ After that, you can run it following [Usage](#usage) section.
 
 ## Configuration
 
-Before using it, check if the default configs (`/configs/*`) make sense for you. If they don't, you can create a `~/.workj/config.cfg` file or pass in via the CLI with the `-c` (or `--config-file`) option (check the `workj -h` to see options and how to use). The valid keys are displayed in `/configs/workj_config.cfg`.
+Before using it, check if the default configs (`/configs/*`) make sense for you. If they don't, you can create a `~/.workj/config.cfg` file or pass in via the CLI with the `-c` (or `--config-file`) option the path to where your custom config is located (check the `workj -h` to see options and how to use). The valid keys are displayed in `/configs/workj_config.cfg`.
 
-- `main_branch` is the start point for the new branch (if it doesn't exist);
-- `layout` is the path to the [Zellij layout](https://zellij.dev/documentation/creating-a-layout.html) you want to use when starting a new `workj add <branch>` command.
+- `main_branch` is the start point for the new branch (if it doesn't exist). Default `origin/main`;
+- `layout` is the path to the [Zellij layout](https://zellij.dev/documentation/creating-a-layout.html) you want to use when starting a new `workj add <branch>` command. Default `configs/layout.kdl`;
+- `no_envs_copy`: whether to copy the `env` files when creating a git worktree. `false` means that the env files will be copied. Default `false`.
 
 >[!NOTE]
 >If you don't pass a config via the `-c`/`--config-file` option, it will check for it at the global level `~/.workj/config.cfg`. If the config file doesn't exist there, the default values (the ones inside `/configs/*`) will be used.
@@ -114,7 +115,7 @@ zig test src/tests.zig
 - [x] Allow user to define a specific `.workj/config.cfg` at the repo level, so it can be customised per repository.
 - [x] Check why `opencode` doesn't open in zellij if put as the command in layout.kdl
 - [x] Allow the `--force` on remove (this needed when the user wants to remove a worktree that has some uncommited changes)
-- [ ] Copy the envs on creation
+- [x] Copy the envs on creation
 - [~] Add tests
     - [ ] validate if Zellij has a "sandbox" mode for tests
     - [ ] for that matter, maybe git also has
