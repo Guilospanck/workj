@@ -5,7 +5,7 @@ const utils = @import("utils.zig");
 const commands = @import("commands.zig");
 const config = @import("config.zig");
 
-const ArgsParseError = error{ MissingValue, UnknownValue, HelperRequired, InternalError };
+pub const ArgsParseError = error{ MissingValue, UnknownValue, HelperRequired, InternalError };
 
 const CliArgs = struct {
     branch_name: []const u8 = "",
@@ -65,7 +65,13 @@ pub fn run() !void {
         return;
     }
 
-    const args = parseArgs(allocator) catch return;
+    const argv = std.process.argsAlloc(allocator) catch |err| {
+        logger.err("{}", .{err});
+        return ArgsParseError.InternalError;
+    };
+    defer std.process.argsFree(allocator, argv);
+
+    const args = parseArgs(allocator, argv) catch return;
     defer args.deinit(allocator);
     logger.debug("{f}\n", .{args});
 
@@ -79,19 +85,19 @@ pub fn run() !void {
     }
 }
 
-fn parseArgs(allocator: std.mem.Allocator) ArgsParseError!CliArgs {
-    const argv = std.process.argsAlloc(allocator) catch |err| {
-        logger.err("{}", .{err});
-        return ArgsParseError.InternalError;
-    };
-    defer std.process.argsFree(allocator, argv);
+pub fn parseArgs(allocator: std.mem.Allocator, argv: []const []const u8) ArgsParseError!CliArgs {
+    // Just program name
+    if (argv.len == 1) {
+        displayUsage();
+        return ArgsParseError.MissingValue;
+    }
 
     var args = CliArgs{};
     // We need this here because when it errors, the caller will not run
     // the deinit on defer, therefore allocations made here would leak.
     errdefer args.deinit(allocator);
 
-    var pos_int: usize = 1;
+    var pos_int: usize = 1; // removes program name
 
     // parse optional args
     while (pos_int < argv.len and argv[pos_int][0] == '-') {
@@ -119,9 +125,10 @@ fn parseArgs(allocator: std.mem.Allocator) ArgsParseError!CliArgs {
         }
     }
 
-    if (pos_int >= argv.len) {
+    // Check if we only have optional args.
+    if (pos_int >= argv.len - 1) {
         displayUsage();
-        return ArgsParseError.UnknownValue;
+        return ArgsParseError.MissingValue;
     }
 
     // parse positional arguments
