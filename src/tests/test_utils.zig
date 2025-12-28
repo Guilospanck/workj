@@ -27,7 +27,6 @@ pub fn runShellAtCwd(allocator: std.mem.Allocator, argv: []const []const u8) !vo
 pub fn setupGit(allocator: std.mem.Allocator, remote_origin: []const u8, main_branch: []const u8) !void {
     const cwd = try std.fmt.allocPrint(allocator, "{s}/{s}", .{ config.get().cwd, remote_origin });
     defer allocator.free(cwd);
-    std.debug.print("CWD: {s}\n", .{cwd});
 
     // Make dir if doesn't exist
     try makeDir(allocator, cwd);
