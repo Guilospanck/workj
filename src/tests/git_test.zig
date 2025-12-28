@@ -41,7 +41,6 @@ test "gitWorktree" {
         const branch: []const u8 = "branch-exists";
         const directory = try git.getOrCreateWorktreeDirectory(allocator, branch);
         defer allocator.free(directory);
-        std.debug.print("DIRECTORY: {s}\n", .{directory});
 
         try test_utils.createBranch(allocator, branch);
         const branch_exists = true;

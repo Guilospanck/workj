@@ -7,7 +7,7 @@ const config = @import("config.zig");
 
 pub const ArgsParseError = error{ MissingValue, UnknownValue, HelperRequired, InternalError };
 
-const CliArgs = struct {
+pub const CliArgs = struct {
     branch_name: []const u8 = "",
     cmd: commands.Command = commands.Command.Add,
     config_path: ?[]const u8 = null,
