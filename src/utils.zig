@@ -1,5 +1,7 @@
 const std = @import("std");
 const logger = @import("logger.zig");
+const constants = @import("constants.zig");
+const utils = @import("utils.zig");
 
 pub fn getAbsPath(allocator: std.mem.Allocator) ![]const u8 {
     const cwd_dir = std.fs.cwd();
@@ -93,10 +95,32 @@ pub fn endsWith(s: []const u8, with: []const u8) bool {
 pub fn getAllEnvsPaths(allocator: std.mem.Allocator, cwd: []const u8) !std.ArrayList([]const u8) {
     var list: std.ArrayList([]const u8) = .empty;
 
-    // TODO: improve this list of pruned directories.
-    const argv = [_][]const u8{ "sh", "-c", "find . -path \"node_modules\" -prune -o -path \".git\" -prune -o -type f -name \".env*\"" };
+    var argv: std.ArrayList([]const u8) = .empty;
+    defer argv.deinit(allocator);
 
-    const result = try std.process.Child.run(.{ .argv = &argv, .cwd = cwd, .allocator = allocator });
+    // ArrayList(u8) builds an array of bytes that then can be converted into a
+    // string ([]u8) with .toOwnedSlice
+    // If we were to use ArrayList([]u8) - or ArrayList([]const u8) -, we would
+    // create a list of strings [][]u8 - [][]const u8
+    var command: std.ArrayList(u8) = .empty;
+    defer command.deinit(allocator);
+
+    try command.appendSlice(allocator, "find .");
+    for (constants.IGNORED_ENV_PATHS) |ignored_path| {
+        const result = try std.fmt.allocPrint(allocator, " -path \"{s}\" -prune -o", .{ignored_path});
+        defer allocator.free(result);
+        try command.appendSlice(allocator, result);
+    }
+    try command.appendSlice(allocator, " -type f -name \".env*\"");
+
+    const find_command = try command.toOwnedSlice(allocator);
+    defer allocator.free(find_command);
+
+    try argv.appendSlice(allocator, &.{ "sh", "-c" });
+    try argv.append(allocator, find_command);
+
+    logger.debug("find command: {s}\n", .{find_command});
+    const result = try std.process.Child.run(.{ .argv = argv.items, .cwd = cwd, .allocator = allocator });
 
     defer allocator.free(result.stdout);
     defer allocator.free(result.stderr);

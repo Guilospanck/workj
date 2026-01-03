@@ -91,3 +91,6 @@ pub const DEFAULT_CONFIG_PATH: []const u8 = ".workj/config.cfg";
 pub const DEFAULT_MAIN_BRANCH: []const u8 = "origin/main";
 pub const DEFAULT_LAYOUT_CONFIG: []const u8 = "configs/layout.kdl";
 pub const DEFAULT_NO_ENVS_COPY: bool = false; // By default we copy the envs files
+
+// TODO: maybe get these also from the config file
+pub const IGNORED_ENV_PATHS = [_][]const u8{ "node_modules", ".git" };
